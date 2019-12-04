@@ -1,0 +1,7 @@
+stages:
+  - build
+
+compile:
+  stage: build
+  script:
+    - echo ok
