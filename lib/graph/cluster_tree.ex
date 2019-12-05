@@ -2,11 +2,20 @@ defmodule Graph.ClusterTree do
   alias Graph.Edge
   alias Graph.Vertex
 
+  @doc """
+  Returns the clusters of a tree (vertices with out degree > 0)
+  """
   @spec clusters(Graph.t()) :: [Vertex.id()]
-  def clusters(%Graph{} = g) do
-    g
-    |> Graph.vertices()
-    |> Enum.reject(&(Graph.out_degree(g, &1) == 0))
+  def clusters(%Graph{out_edges: out_edges}) do
+    Map.keys(out_edges)
+  end
+
+  @doc """
+  Returns the leaves of a tree (vertices with out degree == 0)
+  """
+  @spec leaves(Graph.t()) :: [Vertex.id()]
+  def leaves(%Graph{} = t) do
+    Graph.sink_vertices(t)
   end
 
   @doc """
