@@ -21,14 +21,14 @@ defmodule Graph.CrossingReductionGraph do
 
   @doc """
   Returns a crossing reduction graph for the compound node `x` for a given
-  `level` of a clustered two-level graph `clg`.
+  `fixed_level` and `free_level` of a clustered two-level graph `clg`.
   """
-  @spec new(ClusteredLevelGraph.t(), vertex, pos_integer) :: t
-  def new(%ClusteredLevelGraph{g: g, t: t} = clg, x, level) do
+  @spec new(ClusteredLevelGraph.t(), vertex, pos_integer, pos_integer) :: t
+  def new(%ClusteredLevelGraph{g: g, t: t} = clg, x, fixed_level, free_level) do
     t2 =
       clg
       |> ClusteredLevelGraph.level_cluster_trees(contracted: false)
-      |> Map.get(level)
+      |> Map.get(free_level)
 
     {vs, ys} =
       t
@@ -38,16 +38,17 @@ defmodule Graph.CrossingReductionGraph do
       |> Enum.split_with(&(Graph.out_degree(t, &1) == 0))
 
     v1s =
-      Graph.vertices(g.g)
-      |> Enum.filter(&(Graph.in_degree(g.g, &1) == 0))
+      clg
+      |> ClusteredLevelGraph.vertices_by_level(fixed_level)
       |> Enum.map(&Graph.vertex(g.g, &1))
       |> Enum.map(fn %Vertex{id: id, label: label} -> {id, label} end)
       |> Map.new()
 
+    edge_fn = edge_fn(g, fixed_level, free_level)
+
     crg =
       vs
-      |> Enum.flat_map(&Graph.in_edges(g.g, &1))
-      |> Enum.map(&Graph.edge(g.g, &1))
+      |> Enum.flat_map(&edge_fn.(&1))
       |> Enum.reduce(Graph.new(v1s, acyclic: true), fn
         %Edge{v1: v1, v2: v2}, acc ->
           acc
@@ -58,12 +59,29 @@ defmodule Graph.CrossingReductionGraph do
 
     subs =
       ys
-      |> Enum.map(&{&1, new(clg, &1, level)})
+      |> Enum.map(&{&1, new(clg, &1, fixed_level, free_level)})
       |> Map.new()
 
     crg = Enum.reduce(subs, crg, &inherit_edges/2)
 
     %__MODULE__{g: crg, sub: subs}
+  end
+
+  defp edge_fn(%Graph.LevelGraph{g: g}, fixed_level, free_level) when fixed_level < free_level do
+    fn v ->
+      g
+      |> Graph.in_edges(v)
+      |> Enum.map(&Graph.edge(g, &1))
+    end
+  end
+
+  defp edge_fn(%Graph.LevelGraph{g: g}, fixed_level, free_level) when fixed_level > free_level do
+    fn v ->
+      g
+      |> Graph.out_edges(v)
+      |> Enum.map(&Graph.edge(g, &1))
+      |> Enum.map(fn %Edge{v1: v1, v2: v2} = e -> %{e | v1: v2, v2: v1} end)
+    end
   end
 
   @doc """

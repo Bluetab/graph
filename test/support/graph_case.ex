@@ -34,6 +34,10 @@ defmodule GraphCase do
       end
 
       defp edges(%Graph.CrossingReductionGraph{g: g}) do
+        edges(g)
+      end
+
+      defp edges(%Graph{} = g) do
         g
         |> Graph.get_edges()
         |> Enum.map(fn %{label: %{w: w}, v1: v1, v2: v2} -> {v1, v2, w} end)
