@@ -3,6 +3,7 @@ defmodule Graph.ClusteredCrossingReduction do
   alias Graph.ConstrainedCrossingReduction
   alias Graph.CrossingReductionGraph
   alias Graph.Traversal
+  alias Graph.Vertex
 
   require Logger
 
@@ -19,6 +20,7 @@ defmodule Graph.ClusteredCrossingReduction do
   # foreach c ∈ C do: minimize crossings in G'(c)
   # return an embedding π of V[2] by a DFS traversal of Δ₂
 
+  @spec permute(ClusteredLevelGraph.t()) :: [Vertex.id]
   def permute(%ClusteredLevelGraph{g: %{g: g}, t: t} = clg) do
     case Traversal.arborescence_root(t) do
       nil ->
@@ -30,7 +32,8 @@ defmodule Graph.ClusteredCrossingReduction do
     end
   end
 
-  def do_permute(%Graph{} = g, %CrossingReductionGraph{g: crg_x, gc: gc, sub: crg_ys} = crg) do
+  @spec do_permute(Graph.t(), CrossingReductionGraph.t()) :: [Vertex.id]
+  defp do_permute(%Graph{} = g, %CrossingReductionGraph{g: crg_x, gc: gc, sub: crg_ys} = crg) do
     b = barycenter_fn(crg.g)
 
     crg_x

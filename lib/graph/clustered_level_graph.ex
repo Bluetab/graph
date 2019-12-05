@@ -1,4 +1,9 @@
 defmodule Graph.ClusteredLevelGraph do
+  @moduledoc """
+  A Clustered Level Graph is defined as a k-level graph $(V, E, C, I, Phi)$ and
+  a cluster tree $Gamma = (V uu C, I), V nn C = O/$.
+  """
+
   alias Graph.ClusterTree
   alias Graph.LevelGraph
   alias Graph.Traversal
@@ -8,6 +13,11 @@ defmodule Graph.ClusteredLevelGraph do
 
   @type t :: %__MODULE__{g: LevelGraph.t(), t: Graph.t()}
 
+  @doc """
+  Given a [k-level graph](`t:Graph.LevelGraph.t/0`) $(V, E, C, I, Phi)$ and a
+  [cluster tree](`t:Graph.t/0`) $Gamma = (V uu C, I), V nn C = O/$, returns a
+  new clustered level graph.
+  """
   @spec new(LevelGraph.t(), Graph.t()) :: t
   def new(%LevelGraph{g: g} = lg, %Graph{} = t) do
     leaves =
@@ -26,6 +36,9 @@ defmodule Graph.ClusteredLevelGraph do
     %__MODULE__{g: lg, t: t}
   end
 
+  @doc """
+  Returns the span ${Phi_min(c), Phi_max(c)}$ of a cluster `c`.
+  """
   @spec new(t, Vertex.id()) :: {pos_integer, pos_integer}
   def span(%__MODULE__{} = clg, c) do
     clg
@@ -33,6 +46,11 @@ defmodule Graph.ClusteredLevelGraph do
     |> Enum.min_max()
   end
 
+  @doc """
+  A clustered k-level graph is proper if all edges are proper and each cluster
+  $c in C$ contains a vertex on any spanned level: $forall i in Phi(c): V_c nn
+  V_i != O/$
+  """
   @spec is_proper?(t) :: boolean
   def is_proper?(%__MODULE__{g: g, t: t} = clg) do
     LevelGraph.is_proper?(g) and
