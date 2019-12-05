@@ -20,7 +20,7 @@ defmodule Graph.ClusteredCrossingReduction do
   # foreach c ∈ C do: minimize crossings in G'(c)
   # return an embedding π of V[2] by a DFS traversal of Δ₂
 
-  @spec permute(ClusteredLevelGraph.t()) :: [Vertex.id]
+  @spec permute(ClusteredLevelGraph.t()) :: [Vertex.id()]
   def permute(%ClusteredLevelGraph{g: %{g: g}, t: t} = clg) do
     case Traversal.arborescence_root(t) do
       nil ->
@@ -32,7 +32,7 @@ defmodule Graph.ClusteredCrossingReduction do
     end
   end
 
-  @spec do_permute(Graph.t(), CrossingReductionGraph.t()) :: [Vertex.id]
+  @spec do_permute(Graph.t(), CrossingReductionGraph.t()) :: [Vertex.id()]
   defp do_permute(%Graph{} = g, %CrossingReductionGraph{g: crg_x, gc: gc, sub: crg_ys} = crg) do
     b = barycenter_fn(crg.g)
 
@@ -93,7 +93,7 @@ defmodule Graph.ClusteredCrossingReduction do
       |> Enum.map(fn [c1, c2] -> {c1, c2} end)
 
     clg
-    |> CrossingReductionGraph.new(root, free_level)
+    |> CrossingReductionGraph.new(root, fixed_level, free_level)
     |> CrossingReductionGraph.insert_border_edges(cs, 1)
     |> CrossingReductionGraph.insert_constraints(constraints)
   end
