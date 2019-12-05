@@ -142,6 +142,11 @@ defmodule Graph do
     end
   end
 
+  @spec vertex_label(t, vertex_id) :: Vertex.label() | nil
+  def vertex_label(%__MODULE__{vertices: vertices}, id) do
+    Map.get(vertices, id)
+  end
+
   @spec vertices(t) :: [vertex_id]
   def vertices(%__MODULE__{vertices: vertices}) do
     Map.keys(vertices)
