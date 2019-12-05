@@ -1,5 +1,5 @@
 defmodule GraphTest do
-  use ExUnit.Case
+  use GraphCase
 
   alias Graph
   alias Graph.Edge
@@ -7,50 +7,30 @@ defmodule GraphTest do
   doctest Graph
 
   describe "A graph" do
-    test "get_path/3 returns a path" do
-      g =
-        [:foo, :bar, :baz, :xyzzy, :spqr]
-        |> Graph.new()
-        |> Graph.add_edges(foo: :bar, bar: :baz, bar: :xyzzy, baz: :spqr, xyzzy: :spqr)
-
+    @tag edges: [foo: :bar, bar: :baz, bar: :xyzzy, baz: :spqr, xyzzy: :spqr]
+    test "get_path/3 returns a path", %{g: g} do
       assert Graph.get_path(g, :foo, :spqr) == [:foo, :bar, :baz, :spqr]
     end
 
-    test "del_path/3 deletes all paths between two vertices" do
-      g =
-        [:foo, :bar, :baz, :xyzzy, :spqr]
-        |> Graph.new()
-        |> Graph.add_edges(foo: :bar, bar: :baz, bar: :xyzzy, baz: :spqr, xyzzy: :spqr)
-        |> Graph.del_path(:foo, :spqr)
-
+    @tag edges: [foo: :bar, bar: :baz, bar: :xyzzy, baz: :spqr, xyzzy: :spqr]
+    test "del_path/3 deletes all paths between two vertices", %{g: g} do
+      g = Graph.del_path(g, :foo, :spqr)
       refute Graph.get_path(g, :foo, :spqr)
     end
 
-    test "is_tree/1 returns true iff a graph is a tree" do
-      g =
-        [:foo, :bar, :baz, :xyzzy, :spqr]
-        |> Graph.new()
-        |> Graph.add_edges(foo: :bar, baz: :foo, bar: :xyzzy, baz: :spqr)
-
+    @tag edges: [foo: :bar, baz: :foo, bar: :xyzzy, baz: :spqr]
+    test "is_tree/1 returns true iff a graph is a tree", %{g: g} do
       assert Graph.is_tree(g)
       refute Graph.is_tree(Graph.add_edge(g, :spqr, :xyzzy))
     end
 
-    test "is_arborescence/1 returns true if a graph is an arborescence" do
-      g =
-        [:foo, :bar, :baz, :xyzzy, :spqr]
-        |> Graph.new()
-        |> Graph.add_edges(foo: :bar, foo: :baz, bar: :xyzzy, baz: :spqr, spqr: :xyzzy)
-
+    @tag edges: [foo: :bar, foo: :baz, bar: :xyzzy, baz: :spqr, spqr: :xyzzy]
+    test "is_arborescence/1 returns true if a graph is an arborescence", %{g: g} do
       assert Graph.is_arborescence(g)
     end
 
-    test "get_cycle/2 returns long and short cycles" do
-      g =
-        [:foo, :bar, :baz, :xyzzy, :spqr]
-        |> Graph.new()
-        |> Graph.add_edges(foo: :foo, foo: :bar, bar: :baz, baz: :foo, xyzzy: :foo, spqr: :baz)
-
+    @tag edges: [foo: :foo, foo: :bar, bar: :baz, baz: :foo, xyzzy: :foo, spqr: :baz]
+    test "get_cycle/2 returns long and short cycles", %{g: g} do
       assert Graph.get_cycle(g, :missing) == {:error, {:bad_vertex, :missing}}
       refute Graph.get_cycle(g, :spqr)
       assert Graph.get_cycle(g, :foo) == [:foo, :bar, :baz, :foo]
@@ -59,30 +39,34 @@ defmodule GraphTest do
       assert Graph.get_cycle(g, :xyzzy) == [:xyzzy]
     end
 
-    test ":digraph.get_short_cycle/2" do
-      g = :digraph.new()
-
-      [:foo, :bar, :baz, :xyzzy, :spqr]
-      |> Enum.each(&:digraph.add_vertex(g, &1))
-
-      [foo: :foo, foo: :bar, bar: :baz, baz: :foo, xyzzy: :foo, spqr: :baz, xyzzy: :xyzzy]
-      |> Enum.each(fn {v1, v2} -> :digraph.add_edge(g, v1, v2) end)
-
-      refute :digraph.get_short_cycle(g, :spqr)
-      assert :digraph.get_short_cycle(g, :foo) == [:foo, :foo]
-      assert :digraph.get_short_cycle(g, :xyzzy) == [:xyzzy, :xyzzy]
-    end
-
-    test "get_short_cycle/2 returns short cycles" do
-      g =
-        [:foo, :bar, :baz, :xyzzy, :spqr]
-        |> Graph.new()
-        |> Graph.add_edges(foo: :foo, foo: :bar, bar: :baz, baz: :foo, xyzzy: :foo, spqr: :baz)
-        |> Graph.add_edges(xyzzy: :xyzzy)
-
+    @tag edges: [
+           foo: :foo,
+           foo: :bar,
+           bar: :baz,
+           baz: :foo,
+           xyzzy: :foo,
+           spqr: :baz,
+           xyzzy: :xyzzy
+         ]
+    test "get_short_cycle/2 returns short cycles", %{g: g} do
       refute Graph.get_short_cycle(g, :spqr)
       assert Graph.get_short_cycle(g, :foo) == [:foo, :foo]
       assert Graph.get_short_cycle(g, :xyzzy) == [:xyzzy, :xyzzy]
+    end
+
+    @tag edges: [foo: :bar, bar: :baz, xyzzy: :baz]
+    test "source_vertices/1 returns vertices with in_degree 0", %{g: g} do
+      assert Graph.source_vertices(g) == [:foo, :xyzzy]
+    end
+
+    @tag edges: [foo: :bar, bar: :baz, xyzzy: :baz, bar: :spqr]
+    test "sink_vertices/1 returns vertices with out_degree 0", %{g: g} do
+      assert Graph.sink_vertices(g) == [:baz, :spqr]
+    end
+
+    @tag edges: [foo: :bar, bar: :baz, xyzzy: :baz, bar: :spqr]
+    test "inner_vertices/1 returns vertices with degree >= 0", %{g: g} do
+      assert Graph.inner_vertices(g) == [:bar]
     end
   end
 

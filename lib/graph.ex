@@ -279,6 +279,29 @@ defmodule Graph do
     Enum.count(edges)
   end
 
+  @spec source_vertices(t) :: [vertex_id]
+  def source_vertices(%__MODULE__{vertices: vertices, in_edges: in_edges}) do
+    vertices
+    |> Map.drop(Map.keys(in_edges))
+    |> Map.keys()
+  end
+
+  @spec sink_vertices(t) :: [vertex_id]
+  def sink_vertices(%__MODULE__{vertices: vertices, out_edges: out_edges}) do
+    vertices
+    |> Map.drop(Map.keys(out_edges))
+    |> Map.keys()
+  end
+
+  @spec inner_vertices(t) :: [vertex_id]
+  def inner_vertices(%__MODULE__{in_edges: in_edges, out_edges: out_edges}) do
+    [in_edges, out_edges]
+    |> Enum.map(&Map.keys/1)
+    |> Enum.map(&MapSet.new/1)
+    |> Enum.reduce(&MapSet.intersection/2)
+    |> MapSet.to_list()
+  end
+
   @spec degree(t, vertex_id) :: non_neg_integer() | {:error, :bad_vertex}
   def degree(%__MODULE__{} = g, v) do
     with i when is_integer(i) <- in_degree(g, v),
