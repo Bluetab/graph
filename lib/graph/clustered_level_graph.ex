@@ -20,12 +20,7 @@ defmodule Graph.ClusteredLevelGraph do
   """
   @spec new(LevelGraph.t(), Graph.t()) :: t
   def new(%LevelGraph{g: g} = lg, %Graph{} = t) do
-    leaves =
-      t
-      |> Graph.vertices()
-      |> Enum.filter(&(Graph.out_degree(t, &1) == 0))
-
-    if Graph.vertices(g) != leaves do
+    if Graph.vertices(g) != Graph.sink_vertices(t) do
       raise(ArgumentError, "vertices must match")
     end
 
@@ -37,12 +32,12 @@ defmodule Graph.ClusteredLevelGraph do
   end
 
   @doc """
-  Returns the span ${Phi_min(c), Phi_max(c)}$ of a cluster `c`.
+  Returns the span ${Phi_min(c), Phi_max(c)}$ of a vertex `v`.
   """
   @spec new(t, Vertex.id()) :: {pos_integer, pos_integer}
-  def span(%__MODULE__{} = clg, c) do
+  def span(%__MODULE__{} = clg, v) do
     clg
-    |> levels(c)
+    |> levels(v)
     |> Enum.min_max()
   end
 
@@ -77,8 +72,7 @@ defmodule Graph.ClusteredLevelGraph do
   @spec level_cluster_trees(t, Keyword.t()) :: %{pos_integer: Graph.t()}
   def level_cluster_trees(%__MODULE__{g: g, t: t}, opts \\ []) do
     t
-    |> Graph.vertices()
-    |> Enum.filter(&(Graph.out_degree(t, &1) == 0))
+    |> ClusterTree.leaves()
     |> Enum.group_by(&LevelGraph.level(g, &1))
     |> Enum.map(fn {level, vs} -> {level, Traversal.reaching_subgraph(t, vs)} end)
     |> contracted(Keyword.get(opts, :contracted, false))
@@ -91,12 +85,23 @@ defmodule Graph.ClusteredLevelGraph do
     Enum.map(ts, fn {level, g} -> {level, ClusterTree.contracted(g)} end)
   end
 
+  @doc """
+  Returns a list of clusters spanning a given `min` and `max` level.
+  """
+  @spec clusters(t, {pos_integer, pos_integer}) :: [Vertex.id()]
   def clusters(%__MODULE__{t: t} = clg, {min, max}) do
     t
-    |> Graph.vertices()
-    |> Enum.reject(&(Graph.out_degree(t, &1) == 0))
+    |> ClusterTree.clusters()
     |> Enum.group_by(&span(clg, &1))
     |> Enum.filter(fn {{min1, max1}, _} -> min1 <= min and max1 >= max end)
     |> Enum.flat_map(fn {_span, cs} -> cs end)
+  end
+
+  @doc """
+  Returns a list of vertices at a given level of the clustered k-level graph
+  """
+  @spec vertices_by_level(t, pos_integer) :: [Vertex.id()]
+  def vertices_by_level(%__MODULE__{g: g}, level) do
+    LevelGraph.vertices_by_level(g, level)
   end
 end
