@@ -54,9 +54,24 @@ defmodule Graph.LevelGraph do
     end
   end
 
+  @doc """
+  Returns a map whose keys are levels and whose values are lists of vertices at
+  each level.
+  """
+  @spec vertices_by_level(t) :: %{pos_integer: [Vertex.id()]}
   def vertices_by_level(%__MODULE__{g: g} = lg) do
     g
     |> Graph.vertices()
     |> Enum.group_by(&level(lg, &1))
+  end
+
+  @doc """
+  Returns the vertices of a given level of a k-level graph.
+  """
+  @spec vertices_by_level(t, pos_integer) :: [Vertex.id()]
+  def vertices_by_level(%__MODULE__{g: g} = lg, level) do
+    g
+    |> Graph.vertices()
+    |> Enum.filter(&(level(lg, &1) == level))
   end
 end

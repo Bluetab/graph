@@ -10,5 +10,12 @@ defmodule Graph.LevelGraphTest do
       Enum.each([11, 12, 13, 14], fn v -> assert LevelGraph.level(lg, v) == 1 end)
       Enum.each([21, 22, 23], fn v -> assert LevelGraph.level(lg, v) == 2 end)
     end
+
+    @tag edges: [{11, 21}, {12, 22}, {13, 21}, {14, 23}]
+    test "vertices_by_level/2 returns the vertices of the level", %{g: g} do
+      assert lg = LevelGraph.new(g)
+      assert LevelGraph.vertices_by_level(lg, 1) == [11, 12, 13, 14]
+      assert LevelGraph.vertices_by_level(lg, 2) == [21, 22, 23]
+    end
   end
 end
