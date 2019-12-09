@@ -65,8 +65,13 @@ defmodule GraphTest do
     end
 
     @tag edges: [foo: :bar, bar: :baz, xyzzy: :baz, bar: :spqr]
-    test "inner_vertices/1 returns vertices with degree >= 0", %{g: g} do
+    test "inner_vertices/1 returns vertices with degree > 0", %{g: g} do
       assert Graph.inner_vertices(g) == [:bar]
+    end
+
+    @tag edges: [foo: :bar, bar: :baz, xyzzy: :baz, bar: :spqr]
+    test "in_vertices/1 returns vertices with in_degree > 0", %{g: g} do
+      assert Graph.in_vertices(g) == [:bar, :baz, :spqr]
     end
   end
 

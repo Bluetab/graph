@@ -40,8 +40,7 @@ defmodule Graph.ConstrainedCrossingReductionTest do
     @tag constraints: [c2: :c3]
     test "permute/4 returns a permutation of v2", %{g: g, gc: gc} do
       b = barycenter_fn(g)
-      v2 = [:c3, :e, :f, :c2]
-      assert ConstrainedCrossingReduction.permute(g, gc, v2, b) == [:c2, :e, :f, :c3]
+      assert ConstrainedCrossingReduction.permute(g, gc, b) == [:c2, :e, :f, :c3]
     end
   end
 end

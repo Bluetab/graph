@@ -21,13 +21,13 @@ defmodule Graph.ClusteredCrossingReduction do
   # return an embedding π of V[2] by a DFS traversal of Δ₂
 
   @spec permute(ClusteredLevelGraph.t()) :: [Vertex.id()]
-  def permute(%ClusteredLevelGraph{g: %{g: g}, t: t} = clg) do
+  def permute(%ClusteredLevelGraph{g: %{g: g}, t: t} = clg, fixed_level \\ 1, free_level \\ 2) do
     case Traversal.arborescence_root(t) do
       nil ->
         raise(ArgumentError, "cluster tree has no root")
 
       r ->
-        crg = crossing_reduction_graph(clg, r, 1, 2)
+        crg = crossing_reduction_graph(clg, r, fixed_level, free_level)
         do_permute(g, crg)
     end
   end
@@ -37,7 +37,7 @@ defmodule Graph.ClusteredCrossingReduction do
     b = barycenter_fn(crg.g)
 
     crg_x
-    |> ConstrainedCrossingReduction.permute(gc, v2(crg), b)
+    |> ConstrainedCrossingReduction.permute(gc, b)
     |> Enum.flat_map(fn v ->
       case Map.get(crg_ys, v) do
         nil -> [v]
@@ -46,21 +46,15 @@ defmodule Graph.ClusteredCrossingReduction do
     end)
   end
 
-  defp v2(%CrossingReductionGraph{g: g}) do
-    # TODO: revise this
-    g
-    |> Graph.vertices()
-    |> Enum.reject(&(Graph.in_degree(g, &1) == 0))
-  end
-
   defp barycenter_fn(%Graph{} = g) do
     fn v ->
       case Graph.in_degree(g, v) do
-        {:error, _} ->
+        {:error, _} = e ->
           Logger.error("Missing vertex #{inspect(v)} #{inspect(Map.keys(g.vertices))}")
-          1
+          e
 
         0 ->
+          Logger.warn("Vertex #{inspect(v)} has in degree 0")
           1
 
         d ->
@@ -94,7 +88,7 @@ defmodule Graph.ClusteredCrossingReduction do
 
     clg
     |> CrossingReductionGraph.new(root, fixed_level, free_level)
-    |> CrossingReductionGraph.insert_border_edges(cs, 1)
+    #|> CrossingReductionGraph.insert_border_edges(cs, fixed_level, 1)
     |> CrossingReductionGraph.insert_constraints(constraints)
   end
 end

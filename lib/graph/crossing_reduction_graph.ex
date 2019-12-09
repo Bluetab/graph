@@ -88,32 +88,32 @@ defmodule Graph.CrossingReductionGraph do
   Inserts vertices corresponding to the borders of the clusters `cs`, and
   edges with a given weight `w`.
   """
-  @spec insert_border_edges(t, [vertex], number) :: t
-  def insert_border_edges(crg, cs, w \\ 0.5)
+  @spec insert_border_edges(t, [vertex], number, number) :: t
+  def insert_border_edges(crg, cs, r, w \\ 0.5)
 
-  def insert_border_edges(%__MODULE__{} = crg, [], _w), do: crg
+  def insert_border_edges(%__MODULE__{} = crg, [], _r, _w), do: crg
 
-  def insert_border_edges(%__MODULE__{g: g, sub: sub} = crg, [c | cs], w) do
+  def insert_border_edges(%__MODULE__{g: g, sub: sub} = crg, [c | cs], r, w) do
     if Graph.has_vertex?(g, c) do
-      %{crg | g: do_insert_border_edges(g, c, w)}
+      %{crg | g: do_insert_border_edges(g, c, r, w)}
     else
       sub =
         sub
-        |> Enum.map(fn {y, crg_y} -> {y, insert_border_edges(crg_y, [c], w)} end)
+        |> Enum.map(fn {y, crg_y} -> {y, insert_border_edges(crg_y, [c], r, w)} end)
         |> Map.new()
 
       %{crg | sub: sub}
     end
-    |> insert_border_edges(cs, w)
+    |> insert_border_edges(cs, r, w)
   end
 
-  @spec do_insert_border_edges(Graph.t(), vertex, number) :: Graph.t()
-  defp do_insert_border_edges(%Graph{} = g, y, w) do
+  @spec do_insert_border_edges(Graph.t(), vertex, number, number) :: Graph.t()
+  defp do_insert_border_edges(%Graph{} = g, y, r, w) do
     g
-    |> Graph.add_vertex({:l, y})
-    |> Graph.add_vertex({:r, y})
-    |> Graph.add_edge({:l, y}, y, w: w)
-    |> Graph.add_edge({:r, y}, y, w: w)
+    |> Graph.add_vertex({:l, y, r})
+    |> Graph.add_vertex({:r, y, r})
+    |> Graph.add_edge({:l, y, r}, y, w: w)
+    |> Graph.add_edge({:r, y, r}, y, w: w)
   end
 
   @spec inherit_edges({vertex, t}, Graph.t()) :: t

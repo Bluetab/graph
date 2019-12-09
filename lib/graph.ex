@@ -279,6 +279,23 @@ defmodule Graph do
     Enum.count(edges)
   end
 
+  @doc """
+  Returns vertices with in_degree > 0.
+
+    ## Examples
+
+      iex> g = Graph.new([:foo, :bar, :baz])
+      iex> g = Graph.add_edge(g, :foo, :bar)
+      iex> g = Graph.add_edge(g, :bar, :baz)
+      iex> Graph.in_vertices(g)
+      [:bar, :baz]
+
+  """
+  @spec in_vertices(t) :: [vertex_id]
+  def in_vertices(%__MODULE__{in_edges: in_edges}) do
+    Map.keys(in_edges)
+  end
+
   @spec source_vertices(t) :: [vertex_id]
   def source_vertices(%__MODULE__{vertices: vertices, in_edges: in_edges}) do
     vertices

@@ -53,5 +53,68 @@ defmodule Graph.ClusteredLevelGraphTest do
 
       assert Graph.vertices(sg) == [:i]
     end
+
+    @tag edges: [{11, 21}, {12, 22}, {13, 21}, {14, 23}]
+    @tag tree: [root: [a: [11, 21, b: [13, c: [14]]], d: [12, 22], e: [23]]]
+    test "insert_border_segments/1", %{g: g, t: t} do
+      assert lg = LevelGraph.new(g)
+
+      assert %{g: %{g: g}, t: t} =
+               lg
+               |> ClusteredLevelGraph.new(t)
+               |> ClusteredLevelGraph.insert_border_segments()
+
+      Enum.each(
+        %{
+          root: [{:l, :root, 1}, {:r, :root, 1}, {:l, :root, 2}, {:r, :root, 2}],
+          a: [{:l, :a, 1}, {:r, :a, 1}, {:l, :a, 2}, {:r, :a, 2}],
+          b: [{:l, :b, 1}, {:r, :b, 1}],
+          c: [{:l, :c, 1}, {:r, :c, 1}],
+          d: [{:l, :d, 1}, {:r, :d, 1}, {:l, :d, 2}, {:r, :d, 2}],
+          e: [{:l, :e, 2}, {:r, :e, 2}]
+        },
+        fn {v, ws} ->
+          out_neighbours = Graph.out_neighbours(t, v)
+          assert Enum.all?(ws, &Enum.member?(out_neighbours, &1))
+        end
+      )
+
+      assert Graph.source_vertices(g) == [
+               11,
+               12,
+               13,
+               14,
+               {:l, :a, 1},
+               {:l, :b, 1},
+               {:l, :c, 1},
+               {:l, :d, 1},
+               {:l, :e, 2},
+               {:l, :root, 1},
+               {:r, :a, 1},
+               {:r, :b, 1},
+               {:r, :c, 1},
+               {:r, :d, 1},
+               {:r, :e, 2},
+               {:r, :root, 1}
+             ]
+
+      assert Graph.sink_vertices(g) == [
+               21,
+               22,
+               23,
+               {:l, :a, 2},
+               {:l, :b, 1},
+               {:l, :c, 1},
+               {:l, :d, 2},
+               {:l, :e, 2},
+               {:l, :root, 2},
+               {:r, :a, 2},
+               {:r, :b, 1},
+               {:r, :c, 1},
+               {:r, :d, 2},
+               {:r, :e, 2},
+               {:r, :root, 2}
+             ]
+    end
   end
 end

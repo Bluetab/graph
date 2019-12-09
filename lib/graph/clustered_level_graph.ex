@@ -104,4 +104,49 @@ defmodule Graph.ClusteredLevelGraph do
   def vertices_by_level(%__MODULE__{g: g}, level) do
     LevelGraph.vertices_by_level(g, level)
   end
+
+  def insert_border_segments(%__MODULE__{t: t} = clg) do
+    t
+    |> ClusterTree.clusters()
+    |> Enum.map(&{&1, span(clg, &1)})
+    |> Enum.reduce(clg, &insert_border_segments/2)
+  end
+
+  defp insert_border_segments({c, {min, max}}, %__MODULE__{} = clg) do
+    clg =
+      min..max
+      |> Enum.reduce(clg, fn rank, %__MODULE__{g: %{g: g} = lg, t: t} = acc ->
+        t =
+          t
+          |> Graph.add_vertex({:l, c, rank})
+          |> Graph.add_vertex({:r, c, rank})
+          |> Graph.add_edge(c, {:l, c, rank})
+          |> Graph.add_edge(c, {:r, c, rank})
+
+        g =
+          g
+          |> Graph.add_vertex({:l, c, rank}, border: :left)
+          |> Graph.add_vertex({:r, c, rank}, border: :right)
+
+        lg = %{lg | g: g}
+
+        %{acc | g: lg, t: t}
+      end)
+
+    clg =
+      min..max
+      |> Enum.chunk_every(2, 1, :discard)
+      |> Enum.reduce(clg, fn [rank1, rank2], %__MODULE__{g: %{g: g} = lg} = acc ->
+        g =
+          g
+          |> Graph.add_edge({:l, c, rank1}, {:l, c, rank2})
+          |> Graph.add_edge({:r, c, rank1}, {:r, c, rank2})
+
+        lg = %{lg | g: g}
+
+        %{acc | g: lg}
+      end)
+
+    clg
+  end
 end
