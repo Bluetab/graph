@@ -38,12 +38,33 @@ defmodule Graph.ClusteredCrossingReduction do
 
     crg_x
     |> ConstrainedCrossingReduction.permute(gc, b)
+    |> reorder_border_nodes()
     |> Enum.flat_map(fn v ->
       case Map.get(crg_ys, v) do
         nil -> [v]
         crg -> do_permute(g, crg)
       end
     end)
+  end
+
+  defp reorder_border_nodes(els) do
+    els
+    |> Enum.split_with(fn
+      {:l, _, _} -> true
+      {:r, _, _} -> true
+      _ -> false
+    end)
+    |> do_reorder_border_nodes
+  end
+
+  defp do_reorder_border_nodes({[], els}), do: els
+
+  defp do_reorder_border_nodes({[{:l, _, _} = left, right], els}) do
+    [left | els] ++ [right]
+  end
+
+  defp do_reorder_border_nodes({[{:r, _, _} = right, left], els}) do
+    [left | els] ++ [right]
   end
 
   defp barycenter_fn(%Graph{} = g) do
@@ -88,7 +109,6 @@ defmodule Graph.ClusteredCrossingReduction do
 
     clg
     |> CrossingReductionGraph.new(root, fixed_level, free_level)
-    #|> CrossingReductionGraph.insert_border_edges(cs, fixed_level, 1)
     |> CrossingReductionGraph.insert_constraints(constraints)
   end
 end
