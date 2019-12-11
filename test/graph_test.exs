@@ -13,6 +13,11 @@ defmodule GraphTest do
     end
 
     @tag edges: [foo: :bar, bar: :baz, bar: :xyzzy, baz: :spqr, xyzzy: :spqr]
+    test "get_path/3 returns nil if no path exists", %{g: g} do
+      refute Graph.get_path(g, :spqr, :baz)
+    end
+
+    @tag edges: [foo: :bar, bar: :baz, bar: :xyzzy, baz: :spqr, xyzzy: :spqr]
     test "del_path/3 deletes all paths between two vertices", %{g: g} do
       g = Graph.del_path(g, :foo, :spqr)
       refute Graph.get_path(g, :foo, :spqr)

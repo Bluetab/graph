@@ -59,4 +59,22 @@ defmodule Graph.ClusterTree do
     end)
     |> Graph.del_vertex(v)
   end
+
+  def depth(%Graph{} = t) do
+    case Graph.source_vertices(t) do
+      [root] -> do_depth(t, root, 0)
+    end
+  end
+
+  defp do_depth(t, v, d) do
+    case Graph.out_neighbours(t, v) do
+      [] ->
+        d
+
+      vs ->
+        vs
+        |> Enum.map(&do_depth(t, &1, d + 1))
+        |> Enum.max()
+    end
+  end
 end

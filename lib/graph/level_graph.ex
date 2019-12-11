@@ -1,4 +1,13 @@
 defmodule Graph.LevelGraph do
+  @moduledoc """
+  **Forster (2005):**
+  > **(Level Graph)**: A k-**level graph** $G = (V, E, Phi)$ is a graph $(V, E)$
+  > with a **leveling** $Phi: V -> {1,...,k}$ that partitions the vertex set
+  > into k disjoint levels $V_1, ..., V_k, V_i = Phi^(−1)(i)$, such that each
+  > edge $(u, v) in E$ has a positive **span** $Phi(v) − Phi(u) > 0$, i.e., all
+  > edges point downwards. Edges are called **proper** if their span is 1 and
+  > **long span** edges otherwise. $G$ is proper if all its edges are proper.
+  """
   alias Graph.Edge
   alias Graph.Vertex
 

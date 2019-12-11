@@ -72,6 +72,16 @@ defmodule Graph.Traversal do
     end
   end
 
+  @spec topsort(Graph.t()) :: false | vertices
+  def topsort(%Graph{vertices: vs} = g) do
+    l = revpostorder(g)
+
+    case Enum.count(forest(g, &inn/3, l)) == Enum.count(vs) do
+      true -> l
+      false -> false
+    end
+  end
+
   @spec inn(Graph.t(), Graph.id(), vertices) :: vertices
   defp inn(%Graph{} = g, v, vs) do
     Graph.in_neighbours(g, v) ++ vs

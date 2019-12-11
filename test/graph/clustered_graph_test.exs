@@ -2,9 +2,9 @@ defmodule Graph.ClusteredGraphTest do
   use GraphCase
   use TreeCase
 
-  alias Graph.ClusteredGraph
+  alias Graph.CompoundGraph
 
-  describe "Graph.ClusteredGraph" do
+  describe "Graph.CompoundGraph" do
     @tag vertices: [:c1, :c2, :c3, :c4, :c5, :root]
     @tag edges: [
            {1, :a},
@@ -32,7 +32,7 @@ defmodule Graph.ClusteredGraphTest do
            ]
          ]
     test "new/1", %{g: g, t: t} do
-      cg = ClusteredGraph.new(g, t)
+      cg = CompoundGraph.new(g, t)
       assert cg
     end
   end
