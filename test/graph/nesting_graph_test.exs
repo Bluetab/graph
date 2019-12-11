@@ -9,10 +9,8 @@ defmodule Graph.NestingGraphTest do
     @tag vertices: [:a, :b, :c, :d, 1, 2, 3, 4]
     @tag tree: [a: [b: [1, 2], c: [d: [3, 4]]]]
     @tag edges: [{1, 2}, {:b, 1}, {:c, 1}, {3, :c}, {4, :b}, {:c, :d}, {:b, :a}, {:d, :b}, {2, 3}]
-    test "includes border nodes, connectivity edges, cycles and ranks", %{g: g, t: t} do
+    test "includes border nodes, connectivity edges, ranks and inverted edges", %{g: g, t: t} do
       ng = NestingGraph.new(g, t)
-
-      # TODO: cycles: [{2, 1}]
 
       assert %ClusteredLevelGraph{g: %{g: g}} = ng
 
@@ -62,6 +60,14 @@ defmodule Graph.NestingGraphTest do
         assert %{r: rank} = Graph.vertex_label(g, v)
         assert rank == r, "Vertex #{inspect(v)} has rank #{rank}, expected #{r}"
       end)
+
+      inverted_edges =
+        g
+        |> Graph.get_edges()
+        |> Enum.filter(fn %{label: l} -> l[:inverted] end)
+        |> Enum.map(fn %{v1: v1, v2: v2} -> {v1, v2} end)
+
+      assert inverted_edges == [{{:b, :-}, {:d, :+}}, {1, {:c, :+}}]
     end
   end
 end
