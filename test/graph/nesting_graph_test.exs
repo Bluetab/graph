@@ -73,7 +73,7 @@ defmodule Graph.NestingGraphTest do
     @tag vertices: [:root, :a, :b, :a1, :a2, :b1, :b2, 1, 2, 3, 4]
     @tag edges: [{1, 2}, {2, 3}, {3, 4}, {1, 4}, {:b2, :a2}]
     @tag tree: [root: [a: [a1: [1], a2: [2]], b: [b1: [3], b2: [4]]]]
-    test "splits long span edges", %{g: g, t: t} do
+    test "is proper after splitting long span edges and inserting border segments", %{g: g, t: t} do
       ng = NestingGraph.new(g, t)
 
       assert %ClusteredLevelGraph{g: %{g: g}} = ng
@@ -143,7 +143,10 @@ defmodule Graph.NestingGraphTest do
         assert rank == r, "Vertex #{inspect(v)} has rank #{rank}, expected #{r}"
       end)
 
-      clg = ClusteredLevelGraph.split_long_edges(ng)
+      clg =
+        ClusteredLevelGraph.split_long_edges(ng)
+        |> ClusteredLevelGraph.insert_border_segments()
+
       assert ClusteredLevelGraph.is_proper?(clg), "Expected proper graph"
     end
   end

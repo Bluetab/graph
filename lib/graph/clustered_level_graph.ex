@@ -127,8 +127,8 @@ defmodule Graph.ClusteredLevelGraph do
 
         g =
           g
-          |> Graph.add_vertex({:l, c, rank}, border: :left)
-          |> Graph.add_vertex({:r, c, rank}, border: :right)
+          |> Graph.add_vertex({:l, c, rank}, border: :left, r: rank)
+          |> Graph.add_vertex({:r, c, rank}, border: :right, r: rank)
 
         lg = %{lg | g: g}
 
