@@ -408,7 +408,10 @@ defmodule Graph do
   end
 
   @spec subgraph(t, [vertex_id]) :: t
-  def subgraph(%__MODULE__{edges: edges, in_edges: in_edges, out_edges: out_edges}, vs) do
+  def subgraph(
+        %__MODULE__{vertices: vertices, edges: edges, in_edges: in_edges, out_edges: out_edges},
+        vs
+      ) do
     vm = MapSet.new(vs)
 
     edge_ids =
@@ -421,7 +424,7 @@ defmodule Graph do
     edges
     |> Map.take(edge_ids)
     |> Enum.filter(fn {_, {v1, v2, _}} -> MapSet.member?(vm, v1) and MapSet.member?(vm, v2) end)
-    |> Enum.reduce(new(vs), fn {edge_id, {v1, v2, label}}, sg ->
+    |> Enum.reduce(new(Map.take(vertices, vs)), fn {edge_id, {v1, v2, label}}, sg ->
       add_edge(sg, edge_id, v1, v2, label)
     end)
   end
@@ -454,8 +457,18 @@ defmodule Graph do
 
         g = %{
           g
-          | in_edges: Map.put(in_edges, v2, v2n),
-            out_edges: Map.put(out_edges, v1, v1n),
+          | in_edges:
+              if MapSet.size(v2n) == 0 do
+                Map.delete(in_edges, v2)
+              else
+                Map.put(in_edges, v2, v2n)
+              end,
+            out_edges:
+              if MapSet.size(v1n) == 0 do
+                Map.delete(out_edges, v1)
+              else
+                Map.put(out_edges, v1, v1n)
+              end,
             edges: Map.delete(edges, id)
         }
 

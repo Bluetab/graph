@@ -14,13 +14,26 @@ defmodule Graph.LevelGraph do
   defstruct g: %Graph{}, phi: &__MODULE__.default_level_fn/2
 
   @type t :: %__MODULE__{g: Graph.t(), phi: level_fn}
-  @type level_fn :: (Graph.t(), Vertex.id() -> pos_integer | {:error, :bad_vertex})
+  @type level :: pos_integer
+  @type level_fn :: (Graph.t(), Vertex.id() -> level | {:error, :bad_vertex})
 
   @spec new(Graph.t()) :: t
   def new(g), do: %__MODULE__{g: g}
 
   @spec new(Graph.t(), level_fn) :: t
   def new(g, phi), do: %__MODULE__{g: g, phi: phi}
+
+  @spec subgraph(t, [level]) :: t
+  def subgraph(%__MODULE__{g: g} = lg, levels) do
+    vs =
+      lg
+      |> vertices_by_level()
+      |> Map.take(levels)
+      |> Map.values()
+      |> Enum.flat_map(& &1)
+
+    %{lg | g: Graph.subgraph(g, vs)}
+  end
 
   @spec is_proper?(t) :: boolean
   def is_proper?(%__MODULE__{g: g} = lg) do
@@ -29,7 +42,7 @@ defmodule Graph.LevelGraph do
     |> Enum.all?(&(span(lg, &1) == 1))
   end
 
-  @spec level(t, Vertex.id()) :: pos_integer | {:error, :bad_vertex}
+  @spec level(t, Vertex.id()) :: level | {:error, :bad_vertex}
   def level(%__MODULE__{g: g, phi: phi}, vertex_id) do
     case Graph.vertex(g, vertex_id) do
       nil -> {:error, :bad_vertex}
@@ -37,7 +50,7 @@ defmodule Graph.LevelGraph do
     end
   end
 
-  @spec span(t, Edge.id()) :: pos_integer | {:error, :bad_edge}
+  @spec span(t, Edge.id()) :: level | {:error, :bad_edge}
   def span(lg, edge_or_id)
 
   def span(%__MODULE__{} = lg, %Edge{v1: u, v2: v}) do
@@ -67,7 +80,7 @@ defmodule Graph.LevelGraph do
   Returns a map whose keys are levels and whose values are lists of vertices at
   each level.
   """
-  @spec vertices_by_level(t) :: %{pos_integer: [Vertex.id()]}
+  @spec vertices_by_level(t) :: %{level: [Vertex.id()]}
   def vertices_by_level(%__MODULE__{g: g} = lg) do
     g
     |> Graph.vertices()
@@ -77,7 +90,7 @@ defmodule Graph.LevelGraph do
   @doc """
   Returns the vertices of a given level of a k-level graph.
   """
-  @spec vertices_by_level(t, pos_integer) :: [Vertex.id()]
+  @spec vertices_by_level(t, level) :: [Vertex.id()]
   def vertices_by_level(%__MODULE__{g: g} = lg, level) do
     g
     |> Graph.vertices()

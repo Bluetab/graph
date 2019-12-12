@@ -8,13 +8,16 @@ defmodule Graph.EdgeRouting do
   alias Graph.LevelGraph
   alias Graph.Vertex
 
-  @spec edge_routing(ClusteredLevelGraph.t(), Edge.t(), Vertex.id()) :: [Vertex.id()]
+  @type level :: LevelGraph.level()
+
+  @spec edge_routing(ClusteredLevelGraph.t(), Edge.t(), Vertex.id()) ::
+          %{level: Vertex.id()}
   def edge_routing(%ClusteredLevelGraph{} = clg, %Edge{v1: v1, v2: v2}, root) do
     edge_routing(clg, v1, v2, root)
   end
 
   @spec edge_routing(ClusteredLevelGraph.t(), Vertex.id(), Vertex.id(), Vertex.id()) ::
-          [Vertex.id()]
+          %{level: Vertex.id()}
   def edge_routing(%ClusteredLevelGraph{g: lg} = clg, v1, v2, root) do
     l1 = LevelGraph.level(lg, v1)
     l2 = LevelGraph.level(lg, v2)
