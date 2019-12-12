@@ -43,7 +43,7 @@ defmodule Graph.NestingGraph do
     %__MODULE__{g: ng, t: t, cycles: cycles}
     |> rank_assignment()
     |> delete_nesting_edges()
-    |> insert_inverted_edges(cycles)
+    |> insert_cyclic_edges(cycles)
     |> LevelGraph.new(fn g, v -> rank(g, v) end)
     |> ClusteredLevelGraph.new(t)
   end
@@ -53,7 +53,7 @@ defmodule Graph.NestingGraph do
     t
     |> Graph.get_edges()
     |> Enum.reduce(ng, fn %{v1: v1, v2: v2}, acc ->
-      if Graph.has_vertex? ng, v2 do
+      if Graph.has_vertex?(ng, v2) do
         acc
         |> Graph.add_edge({v1, :-}, v2, nesting: true)
         |> Graph.add_edge(v2, {v1, :+}, nesting: true)
@@ -160,15 +160,47 @@ defmodule Graph.NestingGraph do
     |> Enum.reduce(g, fn %{id: edge_id}, acc -> Graph.del_edge(acc, edge_id) end)
   end
 
-  @spec insert_inverted_edges(Graph.t(), [{Vertex.id(), Vertex.id()}]) :: Graph.t()
-  defp insert_inverted_edges(g, edges)
+  @spec insert_cyclic_edges(Graph.t(), [{Vertex.id(), Vertex.id()}]) :: Graph.t()
+  defp insert_cyclic_edges(g, edges)
 
-  defp insert_inverted_edges(%Graph{} = g, []), do: g
+  defp insert_cyclic_edges(%Graph{} = g, []), do: g
 
-  defp insert_inverted_edges(%Graph{} = g, [{v1, v2} | es]) do
+  defp insert_cyclic_edges(%Graph{} = g, [{v1, v2} | es]) do
     g
-    |> Graph.add_edge(v2, v1, inverted: true)
-    |> insert_inverted_edges(es)
+    |> insert_cyclic_edge(v1, v2)
+    |> insert_cyclic_edges(es)
+  end
+
+  @spec insert_cyclic_edge(Graph.t(), Vertex.id(), Vertex.id()) :: Graph.t()
+  defp insert_cyclic_edge(g, v1, v2)
+
+  defp insert_cyclic_edge(%Graph{} = g, {v1, _}, {v2, _}) do
+    [v11, v12, v21, v22] =
+      [{v1, :-}, {v1, :+}, {v2, :-}, {v2, :+}]
+      |> Enum.map(&Graph.vertex(g, &1))
+
+    [%{id: u1, label: %{r: r1}}, %{id: u2, label: %{r: r2}}] =
+      [[v11, v21], [v11, v22], [v12, v21], [v12, v22]]
+      |> Enum.sort_by(fn [%{label: %{r: r1}}, %{label: %{r: r2}}] -> {r2 > r1, abs(r2 - r1)} end)
+      |> hd()
+
+    if r2 > r1 do
+      do_insert_cyclic_edge(g, u1, u2)
+    else
+      do_insert_cyclic_edge(g, u2, u1)
+    end
+  end
+
+  defp insert_cyclic_edge(%Graph{} = g, v1, v2) do
+    do_insert_cyclic_edge(g, v1, v2)
+  end
+
+  @spec do_insert_cyclic_edge(Graph.t(), Vertex.id(), Vertex.id()) :: Graph.t()
+  defp do_insert_cyclic_edge(%Graph{} = g, v1, v2) do
+    case Graph.add_edge(g, v1, v2) do
+      {:error, _} -> Graph.add_edge(g, v2, v1, inverted: true)
+      g -> g
+    end
   end
 
   @spec do_rank_assignment([Vertex.id()], Graph.t(), non_neg_integer) :: Graph.t()

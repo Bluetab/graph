@@ -5,6 +5,8 @@ defmodule Graph.ClusteredLevelGraph do
   """
 
   alias Graph.ClusterTree
+  alias Graph.Edge
+  alias Graph.EdgeRouting
   alias Graph.LevelGraph
   alias Graph.Traversal
   alias Graph.Vertex
@@ -148,5 +150,43 @@ defmodule Graph.ClusteredLevelGraph do
       end)
 
     clg
+  end
+
+  def split_long_edges(%__MODULE__{g: lg, t: t} = clg) do
+    case Graph.source_vertices(t) do
+      [root] ->
+        lg
+        |> LevelGraph.long_span_edges()
+        |> Enum.reduce(clg, &split_long_edge(&2, &1, root))
+    end
+  end
+
+  defp split_long_edge(
+         %__MODULE__{g: %{g: g} = lg, t: t} = clg,
+         %Edge{id: edge_id, v1: v1, v2: v2, label: l} = e,
+         root
+       ) do
+    routing = EdgeRouting.edge_routing(clg, e, root)
+
+    {g, t} =
+      Enum.reduce(routing, {Graph.del_edge(g, edge_id), t, v1}, fn {r, c}, {g, t, w_prev} ->
+        w = {v1, v2, r}
+
+        g =
+          g
+          |> Graph.add_vertex(w, r: r, dummy: true)
+          |> Graph.add_edge(w_prev, w, l)
+
+        t =
+          t
+          |> Graph.add_vertex(w)
+          |> Graph.add_edge(c, w)
+
+        {g, t, w}
+      end)
+      |> (fn {g, t, w_prev} -> {Graph.add_edge(g, w_prev, v2, l), t} end).()
+
+    lg = %{lg | g: g}
+    %{clg | g: lg, t: t}
   end
 end

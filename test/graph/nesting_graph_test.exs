@@ -30,11 +30,11 @@ defmodule Graph.NestingGraphTest do
              ]
 
       assert Graph.out_neighbours(g, {:a, :-}) == []
-      assert Graph.out_neighbours(g, {:b, :-}) == [1, {:d, :+}]
+      assert Graph.out_neighbours(g, {:b, :-}) == [1]
       assert Graph.out_neighbours(g, {:c, :-}) == [{:d, :-}]
       assert Graph.out_neighbours(g, {:d, :-}) == []
       assert Graph.out_neighbours(g, {:a, :+}) == []
-      assert Graph.out_neighbours(g, {:b, :+}) == [{:a, :+}]
+      assert Graph.out_neighbours(g, {:b, :+}) == [{:a, :+}, {:d, :+}]
       assert Graph.out_neighbours(g, {:c, :+}) == []
       assert Graph.out_neighbours(g, {:d, :+}) == []
       assert Graph.out_neighbours(g, 1) == [2, {:c, :+}]
@@ -67,7 +67,84 @@ defmodule Graph.NestingGraphTest do
         |> Enum.filter(fn %{label: l} -> l[:inverted] end)
         |> Enum.map(fn %{v1: v1, v2: v2} -> {v1, v2} end)
 
-      assert inverted_edges == [{{:b, :-}, {:d, :+}}, {1, {:c, :+}}]
+      assert inverted_edges == [{1, {:c, :+}}]
+    end
+
+    @tag vertices: [:root, :a, :b, :a1, :a2, :b1, :b2, 1, 2, 3, 4]
+    @tag edges: [{1, 2}, {2, 3}, {3, 4}, {1, 4}, {:b2, :a2}]
+    @tag tree: [root: [a: [a1: [1], a2: [2]], b: [b1: [3], b2: [4]]]]
+    test "splits long span edges", %{g: g, t: t} do
+      ng = NestingGraph.new(g, t)
+
+      assert %ClusteredLevelGraph{g: %{g: g}} = ng
+
+      assert Graph.vertices(g) == [
+               1,
+               2,
+               3,
+               4,
+               {:a, :+},
+               {:a, :-},
+               {:a1, :+},
+               {:a1, :-},
+               {:a2, :+},
+               {:a2, :-},
+               {:b, :+},
+               {:b, :-},
+               {:b1, :+},
+               {:b1, :-},
+               {:b2, :+},
+               {:b2, :-},
+               {:root, :+},
+               {:root, :-}
+             ]
+
+      assert Graph.out_neighbours(g, 1) == [2, 4]
+      assert Graph.out_neighbours(g, 2) == [3]
+      assert Graph.out_neighbours(g, 3) == [4]
+      assert Graph.out_neighbours(g, 4) == []
+      assert Graph.out_neighbours(g, {:a, :+}) == []
+      assert Graph.out_neighbours(g, {:a, :-}) == []
+      assert Graph.out_neighbours(g, {:a1, :+}) == []
+      assert Graph.out_neighbours(g, {:a1, :-}) == []
+      assert Graph.out_neighbours(g, {:a2, :+}) == [b2: :-]
+      assert Graph.out_neighbours(g, {:a2, :-}) == []
+      assert Graph.out_neighbours(g, {:b, :+}) == []
+      assert Graph.out_neighbours(g, {:b, :-}) == []
+      assert Graph.out_neighbours(g, {:b1, :+}) == []
+      assert Graph.out_neighbours(g, {:b1, :-}) == []
+      assert Graph.out_neighbours(g, {:b2, :+}) == []
+      assert Graph.out_neighbours(g, {:b2, :-}) == []
+      assert Graph.out_neighbours(g, {:root, :+}) == []
+      assert Graph.out_neighbours(g, {:root, :-}) == []
+
+      %{
+        1 => 4,
+        2 => 7,
+        3 => 12,
+        4 => 15,
+        {:a, :+} => 9,
+        {:a, :-} => 2,
+        {:b, :+} => 17,
+        {:b, :-} => 10,
+        {:a1, :+} => 5,
+        {:a1, :-} => 3,
+        {:a2, :+} => 8,
+        {:a2, :-} => 6,
+        {:b1, :+} => 13,
+        {:b1, :-} => 11,
+        {:b2, :+} => 16,
+        {:b2, :-} => 14,
+        {:root, :+} => 18,
+        {:root, :-} => 1
+      }
+      |> Enum.each(fn {v, r} ->
+        assert %{r: rank} = Graph.vertex_label(g, v)
+        assert rank == r, "Vertex #{inspect(v)} has rank #{rank}, expected #{r}"
+      end)
+
+      clg = ClusteredLevelGraph.split_long_edges(ng)
+      assert ClusteredLevelGraph.is_proper?(clg), "Expected proper graph"
     end
   end
 end

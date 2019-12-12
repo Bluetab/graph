@@ -83,4 +83,14 @@ defmodule Graph.LevelGraph do
     |> Graph.vertices()
     |> Enum.filter(&(level(lg, &1) == level))
   end
+
+  @doc """
+  Returns the edges of a k-level graph having span greater than 1.
+  """
+  @spec long_span_edges(t) :: [Edge.t()]
+  def long_span_edges(%__MODULE__{g: g} = lg) do
+    g
+    |> Graph.get_edges()
+    |> Enum.filter(&(span(lg, &1) > 1))
+  end
 end
