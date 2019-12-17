@@ -116,5 +116,22 @@ defmodule Graph.ClusteredLevelGraphTest do
                {:r, :root, 2}
              ]
     end
+
+    @tag edges: [{1, 2}, {2, 3}, {3, 4}]
+    @tag tree: [root: [a: [a1: [1], a2: [2]], b: [b1: [3], b2: [4]]]]
+    test "subgraph/2 returns a subgraph with vertices from specified levels", %{g: g, t: t} do
+      lg = LevelGraph.new(g, fn _, v -> v end)
+      clg = ClusteredLevelGraph.new(lg, t)
+
+      assert %{g: %{g: g}, t: t} = ClusteredLevelGraph.subgraph(clg, [1, 2])
+      assert Graph.vertices(g) == [1, 2]
+      assert Graph.get_edges(g, fn {_, {v1, v2, _}} -> {v1, v2} end) == [{1, 2}]
+      assert Graph.vertices(t) == [1, 2, :a, :a1, :a2, :root]
+
+      assert %{g: %{g: g}, t: t} = ClusteredLevelGraph.subgraph(clg, [2, 3])
+      assert Graph.vertices(g) == [2, 3]
+      assert Graph.get_edges(g, fn {_, {v1, v2, _}} -> {v1, v2} end) == [{2, 3}]
+      assert Graph.vertices(t) == [2, 3, :a, :a2, :b, :b1, :root]
+    end
   end
 end

@@ -34,6 +34,23 @@ defmodule Graph.ClusteredLevelGraph do
   end
 
   @doc """
+  Returns a subgraph of a clustered k-level graph with vertices from the
+  specified `levels`.
+  """
+  @spec subgraph(t, [pos_integer]) :: t
+  def subgraph(%__MODULE__{g: lg, t: t}, levels) do
+    case LevelGraph.subgraph(lg, levels) do
+      %{g: g} = lg ->
+        vs =
+          g
+          |> Graph.vertices()
+          |> Traversal.reaching(t)
+
+        new(lg, Graph.subgraph(t, vs))
+    end
+  end
+
+  @doc """
   Returns the span ${Phi_min(c), Phi_max(c)}$ of a vertex `v`.
   """
   @spec new(t, Vertex.id()) :: {pos_integer, pos_integer}
