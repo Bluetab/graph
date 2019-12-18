@@ -38,7 +38,7 @@ defmodule Graph.ClusteredCrossingReduction do
 
     crg_x
     |> ConstrainedCrossingReduction.permute(gc, b)
-    |> reorder_border_nodes()
+    |> reorder_border_nodes(crg_ys)
     |> Enum.flat_map(fn v ->
       case Map.get(crg_ys, v) do
         nil -> [v]
@@ -47,24 +47,42 @@ defmodule Graph.ClusteredCrossingReduction do
     end)
   end
 
-  defp reorder_border_nodes(els) do
+  defp reorder_border_nodes(els, clusters) do
     els
     |> Enum.split_with(fn
       {:l, _, _} -> true
       {:r, _, _} -> true
       _ -> false
     end)
-    |> do_reorder_border_nodes
+    |> do_reorder_border_nodes(clusters)
   end
 
-  defp do_reorder_border_nodes({[], els}), do: els
+  defp do_reorder_border_nodes({[{:r, _, _} = right, left], els}, %{} = clusters) do
+    do_reorder_border_nodes({[left, right], els}, clusters)
+  end
 
-  defp do_reorder_border_nodes({[{:l, _, _} = left, right], els}) do
+  defp do_reorder_border_nodes({[], els}, %{} = clusters) when clusters == %{} do
+    els
+  end
+
+  defp do_reorder_border_nodes({[], els}, %{} = clusters) do
+    case Map.drop(clusters, els) do
+      m when m == %{} -> els
+    end
+  end
+
+  defp do_reorder_border_nodes({[left, right], [] = _els}, %{} = clusters) do
+    [left | Map.keys(clusters)] ++ [right]
+  end
+
+  defp do_reorder_border_nodes({[left, right], els}, %{} = clusters) when clusters == %{} do
     [left | els] ++ [right]
   end
 
-  defp do_reorder_border_nodes({[{:r, _, _} = right, left], els}) do
-    [left | els] ++ [right]
+  defp do_reorder_border_nodes({[left, right], els}, %{} = clusters) do
+    case Map.drop(clusters, els) do
+      m when m == %{} -> [left | els] ++ [right]
+    end
   end
 
   defp barycenter_fn(%Graph{} = g) do
@@ -103,7 +121,7 @@ defmodule Graph.ClusteredCrossingReduction do
       |> Enum.group_by(&Graph.in_neighbours(t, &1))
       |> Enum.map(&elem(&1, 1))
       |> Enum.filter(&(Enum.count(&1) > 1))
-      # |> TODO: ordering
+      # |> TODO: ordering?
       |> Enum.flat_map(&Enum.chunk_every(&1, 2, 1, :discard))
       |> Enum.map(fn [c1, c2] -> {c1, c2} end)
 

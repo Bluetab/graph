@@ -418,7 +418,7 @@ defmodule Graph do
       [in_edges, out_edges]
       |> Enum.map(&Map.take(&1, vs))
       |> Enum.flat_map(&Map.values/1)
-      |> Enum.reduce(&MapSet.union/2)
+      |> Enum.reduce(MapSet.new(), &MapSet.union/2)
       |> MapSet.to_list()
 
     edges

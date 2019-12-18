@@ -5,6 +5,7 @@ defmodule Graph.ClusteredCrossingReductionTest do
   alias Graph.ClusteredCrossingReduction
   alias Graph.ClusteredLevelGraph
   alias Graph.LevelGraph
+  alias Graph.NestingGraph
 
   @levels [
     [
@@ -83,11 +84,11 @@ defmodule Graph.ClusteredCrossingReductionTest do
   describe "Graph.ClusteredCrossingReduction" do
     @tag vertices:
            @levels
-           |> Enum.flat_map(&Enum.with_index/1)
-           |> Map.new(fn {v, b} -> {v, %{b: b + 1}} end)
+           |> Enum.flat_map(&Enum.with_index(&1, 1))
+           |> Map.new(fn {v, b} -> {v, %{b: b}} end)
     @tag edges: @edges
     @tag tree: @tree
-    test "foo", %{g: g, t: t} do
+    test "permute with fixed level 1", %{g: g, t: t} do
       assert lg = LevelGraph.new(g)
       assert clg = ClusteredLevelGraph.new(lg, t)
 
@@ -113,11 +114,11 @@ defmodule Graph.ClusteredCrossingReductionTest do
 
     @tag vertices:
            @levels
-           |> Enum.flat_map(&Enum.with_index/1)
-           |> Map.new(fn {v, b} -> {v, %{b: b + 1}} end)
+           |> Enum.flat_map(&Enum.with_index(&1, 1))
+           |> Map.new(fn {v, b} -> {v, %{b: b}} end)
     @tag edges: @edges
     @tag tree: @tree
-    test "bar", %{g: g, t: t} do
+    test "permute with fixed level 2", %{g: g, t: t} do
       assert lg = LevelGraph.new(g)
       assert clg = ClusteredLevelGraph.new(lg, t)
 

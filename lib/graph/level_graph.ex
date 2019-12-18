@@ -106,4 +106,25 @@ defmodule Graph.LevelGraph do
     |> Graph.get_edges()
     |> Enum.filter(&(span(lg, &1) > 1))
   end
+
+  @doc """
+  Associates `labels` with all vertices of a clustered level graph.
+  """
+  @spec put_labels(t, Vertex.label()) :: t
+  def put_labels(%__MODULE__{g: g} = lg, labels) do
+    g =
+      g
+      |> Graph.vertices()
+      |> Enum.reduce(g, &Graph.put_label(&2, &1, labels))
+
+    %{lg | g: g}
+  end
+
+  @doc """
+  Associates `labels` with a vertex of a clustered level graph.
+  """
+  @spec put_label(t, Vertex.id(), Vertex.label()) :: t
+  def put_label(%__MODULE__{g: g} = lg, v, labels) do
+    %{lg | g: Graph.put_label(g, v, labels)}
+  end
 end

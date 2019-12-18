@@ -29,6 +29,7 @@ defmodule Graph.ConstrainedCrossingReduction do
   @spec permute(graph, graph, measure_fn) :: vertices
   def permute(%Graph{} = g, %Graph{} = gc, b) do
     v2 = Graph.in_vertices(g)
+
     g =
       Enum.reduce(v2, g, fn v, g ->
         case Graph.vertex(g, v) do

@@ -124,11 +124,9 @@ defmodule Graph.NestingGraph do
     vs
     |> Enum.group_by(&rank(g, &1))
     |> Map.values()
-    |> Enum.with_index()
-    |> Enum.flat_map(fn {vs, i} -> Enum.map(vs, &{&1, i}) end)
-    |> Enum.reduce(g, fn {v, i}, acc ->
-      Graph.put_label(acc, v, r: i + 1)
-    end)
+    |> Enum.with_index(1)
+    |> Enum.flat_map(fn {vs, r} -> Enum.map(vs, &{&1, r}) end)
+    |> Enum.reduce(g, fn {v, r}, acc -> Graph.put_label(acc, v, r: r) end)
   end
 
   @spec adjust_upper_borders(Graph.t(), [Vertex.id()]) :: Graph.t()

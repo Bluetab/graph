@@ -17,7 +17,7 @@ defmodule Graph.ConstrainedCrossingReductionTest do
   end
 
   describe "Graph.ConstrainedCrossingReduction" do
-    @tag vertices: Enum.with_index(@order) |> Map.new(fn {v, b} -> {v, %{b: b + 1}} end)
+    @tag vertices: Enum.with_index(@order, 1) |> Map.new(fn {v, b} -> {v, %{b: b}} end)
     @tag edges: [
            # {1, :c2},
            {{:l, :c2}, :c2},

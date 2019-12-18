@@ -206,4 +206,20 @@ defmodule Graph.ClusteredLevelGraph do
     lg = %{lg | g: g}
     %{clg | g: lg, t: t}
   end
+
+  @doc """
+  Associates `labels` with all vertices of a clustered level graph.
+  """
+  @spec put_labels(t, Vertex.label()) :: t
+  def put_labels(%__MODULE__{g: lg} = clg, labels) do
+    %{clg | g: LevelGraph.put_labels(lg, labels)}
+  end
+
+  @doc """
+  Associates `labels` with a vertex of a clustered level graph.
+  """
+  @spec put_label(t, Vertex.id(), Vertex.label()) :: t
+  def put_label(%__MODULE__{g: lg} = clg, v, labels) do
+    %{clg | g: LevelGraph.put_label(lg, v, labels)}
+  end
 end
