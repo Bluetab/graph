@@ -9,6 +9,9 @@ defmodule Graph.CrossingReduction do
   alias Graph.ConstraintGraph
   alias Graph.CrossingReductionGraph
   alias Graph.LevelGraph
+  alias Graph.NestingGraph
+
+  require Logger
 
   @type vertex_id :: Graph.Vertex.id()
   @type direction :: :down | :up
@@ -149,9 +152,55 @@ defmodule Graph.CrossingReduction do
   end
 
   def clustered_crossing_reduction(%Graph{} = g, %Graph{} = t) do
+    case Graph.source_vertices(t) do
+      [root] ->
+        g
+        |> nesting_graph(t)
+        |> reduce_crossings(root)
+    end
+  end
+
+  def nesting_graph(%Graph{} = g, %Graph{} = t) do
     NestingGraph.new(g, t)
     |> ClusteredLevelGraph.split_long_edges()
     |> ClusteredLevelGraph.insert_border_segments()
     |> ClusteredLevelGraph.initialize_pos()
+  end
+
+  defp reduce_crossings(clg, root, prev_crossings \\ :infinity)
+
+  defp reduce_crossings(%ClusteredLevelGraph{} = clg, _root, 0), do: {clg, 0}
+
+  defp reduce_crossings(%ClusteredLevelGraph{} = clg, root, n) do
+    clg2 =
+      clg
+      |> sweep(root, :down)
+      |> sweep(root, :up)
+
+    case ClusteredLevelGraph.cross_count(clg2) do
+      m when m < n ->
+        Logger.info("Cross count #{m}")
+        reduce_crossings(clg2, root, m)
+
+      _ ->
+        {clg, n}
+    end
+  end
+
+  def sweep(%ClusteredLevelGraph{} = clg, root, direction) do
+    clg
+    |> ClusteredLevelGraph.span(root)
+    |> Tuple.to_list()
+    |> Enum.sort_by(& &1, sorter(direction))
+    |> (fn [first, last] -> first..last end).()
+    |> Enum.chunk_every(2, 1, :discard)
+    |> Enum.reduce(clg, fn levels, acc ->
+      acc
+      |> ClusteredLevelGraph.subgraph(levels)
+      |> crossing_reduction_graphs(direction)
+      |> permute(root)
+      |> Enum.with_index(1)
+      |> Enum.reduce(acc, fn {v, b}, acc -> ClusteredLevelGraph.put_label(acc, v, %{b: b}) end)
+    end)
   end
 end
