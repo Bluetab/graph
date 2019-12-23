@@ -67,27 +67,28 @@ defmodule Graph.CrossingReductionGraphTest do
       assert lg = LevelGraph.new(g)
       assert clg = ClusteredLevelGraph.new(lg, t)
 
-      assert %{c1: c1, c2: c2, c3: c3, c5: c5} = CrossingReduction.crossing_reduction_graphs(clg, :up)
+      assert %{c1: c1, c2: c2, c3: c3, c5: c5} =
+               CrossingReduction.crossing_reduction_graphs(clg, :up)
 
       assert edges(c1) == [
-               {:a, :c2},
-               {:b, :c2},
-               {:b, :c2},
-               {:c, :c2},
-               {:d, 3},
-               {:d, :c2},
-               {:e, 3},
-               {:f, :c2},
-               {:f, :c3},
-               {:g, :c3},
-               {:h, :c3},
-               {:i, :c3},
-               {:j, :c3}
+               a: :c2,
+               b: :c2,
+               b: :c2,
+               c: :c2,
+               d: 3,
+               d: :c2,
+               e: 3,
+               f: :c2,
+               f: :c3,
+               g: :c3,
+               h: :c3,
+               i: :c3,
+               j: :c3
              ]
 
-      assert edges(c2) == [{:a, 1}, {:b, 1}, {:b, 2}, {:c, 2}, {:d, 2}, {:f, 2}]
-      assert edges(c3) == [{:f, 4}, {:g, 4}, {:h, 4}, {:i, 4}, {:j, :c5}]
-      assert edges(c5) == [{:j, 5}]
+      assert edges(c2) == [a: 1, b: 1, b: 2, c: 2, d: 2, f: 2]
+      assert edges(c3) == [f: 4, g: 4, h: 4, i: 4, j: :c5]
+      assert edges(c5) == [j: 5]
     end
   end
 end

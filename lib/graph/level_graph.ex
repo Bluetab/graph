@@ -108,14 +108,16 @@ defmodule Graph.LevelGraph do
   end
 
   @doc """
-  Associates `labels` with all vertices of a clustered level graph.
+  Initializes the position of each vertex in a k-level graph by assigning a
+  value to a given `label`.
   """
-  @spec put_labels(t, Vertex.label()) :: t
-  def put_labels(%__MODULE__{g: g} = lg, labels) do
+  @spec initialize_pos(t) :: t
+  def initialize_pos(%__MODULE__{g: g} = lg, label \\ :b) do
     g =
-      g
-      |> Graph.vertices()
-      |> Enum.reduce(g, &Graph.put_label(&2, &1, labels))
+      lg
+      |> vertices_by_level()
+      |> Enum.flat_map(fn {_, vs} -> Enum.with_index(vs, 1) end)
+      |> Enum.reduce(g, fn {v, b}, acc -> Graph.put_label(acc, v, %{label => b}) end)
 
     %{lg | g: g}
   end
@@ -133,7 +135,6 @@ defmodule Graph.LevelGraph do
   """
   @spec cross_count(t) :: non_neg_integer
   def cross_count(%__MODULE__{g: g} = lg) do
-    alias Graph.Barycentre
     alias Graph.CrossCount
 
     lg

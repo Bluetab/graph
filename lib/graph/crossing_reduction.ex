@@ -13,7 +13,9 @@ defmodule Graph.CrossingReduction do
   @type vertex_id :: Graph.Vertex.id()
   @type direction :: :down | :up
 
-  @spec crossing_reduction_graphs(ClusteredLevelGraph.t, direction) :: %{vertex_id: CrossingReductionGraph.t()}
+  @spec crossing_reduction_graphs(ClusteredLevelGraph.t(), direction) :: %{
+          vertex_id: CrossingReductionGraph.t()
+        }
   def crossing_reduction_graphs(%ClusteredLevelGraph{g: %{g: g}} = clg, direction \\ :down) do
     [{_, t1}, {_, t2}] =
       clg
@@ -144,5 +146,12 @@ defmodule Graph.CrossingReduction do
     t2
     |> Graph.get_path(root, v2)
     |> Enum.chunk_every(2, 1, :discard)
+  end
+
+  def clustered_crossing_reduction(%Graph{} = g, %Graph{} = t) do
+    NestingGraph.new(g, t)
+    |> ClusteredLevelGraph.split_long_edges()
+    |> ClusteredLevelGraph.insert_border_segments()
+    |> ClusteredLevelGraph.initialize_pos()
   end
 end

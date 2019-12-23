@@ -220,11 +220,13 @@ defmodule Graph.ClusteredLevelGraph do
   end
 
   @doc """
-  Associates `labels` with all vertices of a clustered level graph.
+  Initializes the position of each vertex in a clustered k-level graph by
+  assigning a value to a given `label`. The assigned value will be unique within
+  each level of the graph.
   """
-  @spec put_labels(t, Vertex.label()) :: t
-  def put_labels(%__MODULE__{g: lg} = clg, labels) do
-    %{clg | g: LevelGraph.put_labels(lg, labels)}
+  @spec initialize_pos(t, term) :: t
+  def initialize_pos(%__MODULE__{g: lg} = clg, label \\ :b) do
+    %{clg | g: LevelGraph.initialize_pos(lg, label)}
   end
 
   @doc """
