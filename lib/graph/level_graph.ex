@@ -121,10 +121,40 @@ defmodule Graph.LevelGraph do
   end
 
   @doc """
-  Associates `labels` with a vertex of a clustered level graph.
+  Associates `labels` with a vertex of a level graph.
   """
   @spec put_label(t, Vertex.id(), Vertex.label()) :: t
   def put_label(%__MODULE__{g: g} = lg, v, labels) do
     %{lg | g: Graph.put_label(g, v, labels)}
+  end
+
+  @doc """
+  Returns the cross count of a k-level graph.
+  """
+  @spec cross_count(t) :: non_neg_integer
+  def cross_count(%__MODULE__{g: g} = lg) do
+    alias Graph.Barycentre
+    alias Graph.CrossCount
+
+    lg
+    |> vertices_by_level()
+    |> Map.keys()
+    |> Enum.sort()
+    |> Enum.chunk_every(2, 1, :discard)
+    |> Enum.map(&subgraph(lg, &1))
+    |> Enum.map(&CrossCount.bilayer_cross_count(&1.g, fn v -> Graph.vertex(g, v, :b) end))
+    |> Enum.sum()
+  end
+
+  defimpl Inspect do
+    import Inspect.Algebra
+
+    alias Graph.LevelGraph
+
+    def inspect(%LevelGraph{} = lg, opts) do
+      opts = %Inspect.Opts{opts | charlists: :as_lists}
+      levels = LevelGraph.vertices_by_level(lg)
+      concat(["#LevelGraph<", Inspect.Map.inspect(levels, opts), ">"])
+    end
   end
 end

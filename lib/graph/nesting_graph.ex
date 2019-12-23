@@ -72,21 +72,25 @@ defmodule Graph.NestingGraph do
 
     g
     |> Graph.get_edges()
-    |> Enum.map(fn %{v1: v1, v2: v2} -> {v1, v2, is_leaf?.(v1), is_leaf?.(v2)} end)
-    |> Enum.map(fn {v1, v2, v1_is_leaf, v2_is_leaf} ->
-      cond do
-        v1_is_leaf and v2_is_leaf -> {1, v1, v2}
-        v2_is_leaf and Graph.get_path(t, v1, v2) -> {2, {v1, :-}, v2}
-        v2_is_leaf -> {3, {v1, :+}, v2}
-        v1_is_leaf and Graph.get_path(t, v2, v1) -> {4, v1, {v2, :+}}
-        v1_is_leaf -> {5, v1, {v2, :-}}
-        Graph.get_path(t, v1, v2) -> {6, {v1, :-}, {v2, :-}}
-        Graph.get_path(t, v2, v1) -> {7, {v1, :+}, {v2, :+}}
-        true -> {8, {v1, :+}, {v2, :-}}
-      end
-    end)
+    |> Enum.map(fn %{v1: v1, v2: v2} -> edge_spec(t, v1, v2, is_leaf?.(v1), is_leaf?.(v2)) end)
     |> Enum.sort()
     |> Enum.reduce({ng, []}, &add_edge/2)
+  end
+
+  @spec edge_spec(Graph.t(), Vertex.id(), Vertex.id(), boolean, boolean) ::
+          {pos_integer, Vertex.id(), Vertex.id()}
+  # credo:disable-for-next-line Credo.Check.Refactor.CyclomaticComplexity
+  defp edge_spec(t, v1, v2, v1_is_leaf, v2_is_leaf) do
+    cond do
+      v1_is_leaf and v2_is_leaf -> {1, v1, v2}
+      v2_is_leaf and Graph.get_path(t, v1, v2) -> {2, {v1, :-}, v2}
+      v2_is_leaf -> {3, {v1, :+}, v2}
+      v1_is_leaf and Graph.get_path(t, v2, v1) -> {4, v1, {v2, :+}}
+      v1_is_leaf -> {5, v1, {v2, :-}}
+      Graph.get_path(t, v1, v2) -> {6, {v1, :-}, {v2, :-}}
+      Graph.get_path(t, v2, v1) -> {7, {v1, :+}, {v2, :+}}
+      true -> {8, {v1, :+}, {v2, :-}}
+    end
   end
 
   @spec add_edge(

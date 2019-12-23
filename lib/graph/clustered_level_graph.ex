@@ -14,6 +14,7 @@ defmodule Graph.ClusteredLevelGraph do
   defstruct g: %LevelGraph{}, t: %Graph{}
 
   @type t :: %__MODULE__{g: LevelGraph.t(), t: Graph.t()}
+  @type span :: {pos_integer, pos_integer}
 
   @doc """
   Given a [k-level graph](`t:Graph.LevelGraph.t/0`) $(V, E, C, I, Phi)$ and a
@@ -53,7 +54,7 @@ defmodule Graph.ClusteredLevelGraph do
   @doc """
   Returns the span ${Phi_min(c), Phi_max(c)}$ of a vertex `v`.
   """
-  @spec new(t, Vertex.id()) :: {pos_integer, pos_integer}
+  @spec new(t, Vertex.id()) :: span
   def span(%__MODULE__{} = clg, v) do
     clg
     |> levels(v)
@@ -124,6 +125,14 @@ defmodule Graph.ClusteredLevelGraph do
     LevelGraph.vertices_by_level(g, level)
   end
 
+  @spec vertices_by_span(t) :: %{span: [Vertex.id()]}
+  def vertices_by_span(%__MODULE__{t: t} = clg) do
+    t
+    |> Graph.vertices()
+    |> Enum.group_by(&span(clg, &1))
+  end
+
+  @spec insert_border_segments(t) :: t
   def insert_border_segments(%__MODULE__{t: t} = clg) do
     t
     |> ClusterTree.clusters()
@@ -131,6 +140,7 @@ defmodule Graph.ClusteredLevelGraph do
     |> Enum.reduce(clg, &insert_border_segments/2)
   end
 
+  @spec insert_border_segments({Vertex.id(), span}, t) :: t
   defp insert_border_segments({c, {min, max}}, %__MODULE__{} = clg) do
     clg =
       min..max
@@ -169,6 +179,7 @@ defmodule Graph.ClusteredLevelGraph do
     clg
   end
 
+  @spec split_long_edges(t) :: t
   def split_long_edges(%__MODULE__{g: lg, t: t} = clg) do
     case Graph.source_vertices(t) do
       [root] ->
@@ -178,6 +189,7 @@ defmodule Graph.ClusteredLevelGraph do
     end
   end
 
+  @spec split_long_edge(t, Edge.t(), Vertex.id()) :: t
   defp split_long_edge(
          %__MODULE__{g: %{g: g} = lg, t: t} = clg,
          %Edge{id: edge_id, v1: v1, v2: v2, label: l} = e,
@@ -221,5 +233,21 @@ defmodule Graph.ClusteredLevelGraph do
   @spec put_label(t, Vertex.id(), Vertex.label()) :: t
   def put_label(%__MODULE__{g: lg} = clg, v, labels) do
     %{clg | g: LevelGraph.put_label(lg, v, labels)}
+  end
+
+  def cross_count(%__MODULE__{g: lg}) do
+    LevelGraph.cross_count(lg)
+  end
+
+  defimpl Inspect do
+    import Inspect.Algebra
+
+    alias Graph.ClusteredLevelGraph
+
+    def inspect(%ClusteredLevelGraph{} = clg, opts) do
+      opts = %Inspect.Opts{opts | charlists: :as_lists}
+      vs = ClusteredLevelGraph.vertices_by_span(clg)
+      concat(["#ClusteredLevelGraph<", Inspect.Map.inspect(vs, opts), ">"])
+    end
   end
 end

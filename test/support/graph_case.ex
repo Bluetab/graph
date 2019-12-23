@@ -33,38 +33,18 @@ defmodule GraphCase do
         %{g: g}
       end
 
+      defp edges(%Graph.LevelGraph{g: g}) do
+        edges(g)
+      end
+
       defp edges(%Graph.CrossingReductionGraph{g: g}) do
         edges(g)
       end
 
       defp edges(%Graph{} = g) do
         g
-        |> Graph.get_edges()
-        |> Enum.map(fn %{label: %{w: w}, v1: v1, v2: v2} -> {v1, v2, w} end)
-        |> Enum.group_by(fn {v1, v2, _} -> {v1, v2} end, &elem(&1, 2))
-        |> Enum.map(fn {{v1, v2}, ws} -> {v1, v2, Enum.sum(ws)} end)
+        |> Graph.get_edges(fn {_, {v1, v2, _}} -> {v1, v2} end)
         |> Enum.sort()
-      end
-
-      defp barycenter_fn(%Graph{} = g) do
-        fn v ->
-          case Graph.in_degree(g, v) do
-            {:error, _} ->
-              raise(ArgumentError, "Missing vertex")
-
-            0 ->
-              1
-
-            d ->
-              b =
-                g
-                |> Graph.in_neighbours(v)
-                |> Enum.map(&Graph.vertex(g, &1, :b))
-                |> Enum.sum()
-
-              b / d
-          end
-        end
       end
     end
   end

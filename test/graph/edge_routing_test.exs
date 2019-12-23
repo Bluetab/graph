@@ -3,8 +3,8 @@ defmodule Graph.EdgeRoutingTest do
   use TreeCase
 
   alias Graph.ClusteredLevelGraph
-  alias Graph.LevelGraph
   alias Graph.EdgeRouting
+  alias Graph.LevelGraph
   alias Graph.NestingGraph
 
   describe "Edge Routing" do

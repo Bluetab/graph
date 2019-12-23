@@ -9,7 +9,9 @@ defmodule Graph.ConstrainedCrossingReduction do
   https://doi.org/10.1007/978-3-540-31843-9_22
   """
 
+  alias Graph.Barycentre
   alias Graph.ConstraintGraph
+  alias Graph.LevelGraph
   alias Graph.Vertex
 
   require Logger
@@ -24,11 +26,12 @@ defmodule Graph.ConstrainedCrossingReduction do
   @doc """
   For a given two-level graph G = (V1, V2, E) and acyclic constraint graph
   Gc ⊆ V2 x V2, returns a permutation of V2 satisfying the constraints and
-  otherwise ordered by the measure function `b` (barycenter measure).
+  otherwise ordered by the measure function `b` (barycentre measure).
   """
-  @spec permute(graph, graph, measure_fn) :: vertices
-  def permute(%Graph{} = g, %Graph{} = gc, b) do
-    v2 = Graph.in_vertices(g)
+  @spec permute(LevelGraph.t(), graph, pos_integer) :: vertices
+  def permute(%LevelGraph{g: g} = lg, %Graph{} = gc, level) do
+    b = Barycentre.b(g)
+    v2 = LevelGraph.vertices_by_level(lg, level)
 
     g =
       Enum.reduce(v2, g, fn v, g ->

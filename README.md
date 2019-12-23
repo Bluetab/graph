@@ -35,6 +35,6 @@ be found at [https://hexdocs.pm/graph](https://hexdocs.pm/graph).
 ## References
 
 - Sander, G. (1996). Layout of compound directed graphs.
-- Forster, M. (2002) Applying Crossing Reduction Strategies to Layered Compound Graphs. In: Goodrich M.T., Kobourov S.G. (eds) Graph Drawing. GD 2002. Lecture Notes in Computer Science, vol 2528. Springer, Berlin, Heidelberg.
+- Forster, M. (2002) [Applying Crossing Reduction Strategies to Layered Compound Graphs](https://doi.org/10.1007/3-540-36151-0_26). In: Goodrich M.T., Kobourov S.G. (eds) Graph Drawing. GD 2002. Lecture Notes in Computer Science, vol 2528. Springer, Berlin, Heidelberg
 - Forster, M. (2004). A fast and simple heuristic for constrained two-level crossing reduction. In International Symposium on Graph Drawing (pp. 206-216). Springer, Berlin, Heidelberg.
 - Forster, M. (2005). Crossings in clustered level graphs.

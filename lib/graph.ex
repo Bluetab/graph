@@ -404,7 +404,7 @@ defmodule Graph do
 
   @spec is_arborescence(t) :: true | false
   def is_arborescence(%__MODULE__{} = g) do
-    is_nil(Traversal.arborescence_root(g))
+    Traversal.arborescence_root(g) != nil
   end
 
   @spec subgraph(t, [vertex_id]) :: t

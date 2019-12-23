@@ -1,4 +1,8 @@
 defmodule Graph.ClusterTree do
+  @moduledoc """
+  This module defines functions for operation on cluster trees.
+  """
+
   alias Graph.Edge
   alias Graph.Vertex
 

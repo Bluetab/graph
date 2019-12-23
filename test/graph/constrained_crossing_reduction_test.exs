@@ -3,6 +3,7 @@ defmodule Graph.ConstrainedCrossingReductionTest do
 
   alias Graph.ConstrainedCrossingReduction
   alias Graph.ConstraintGraph
+  alias Graph.LevelGraph
 
   @order [{:l, :c2}, 1, 2, {:r, :c2}, 3, {:l, :c1}, {:l, :c3}, 4, 5, {:r, :c3}, {:r, :c1}]
 
@@ -39,8 +40,8 @@ defmodule Graph.ConstrainedCrossingReductionTest do
          ]
     @tag constraints: [c2: :c3]
     test "permute/4 returns a permutation of v2", %{g: g, gc: gc} do
-      b = barycenter_fn(g)
-      assert ConstrainedCrossingReduction.permute(g, gc, b) == [:c2, :e, :f, :c3]
+      lg = LevelGraph.new(g)
+      assert ConstrainedCrossingReduction.permute(lg, gc, 2) == [:c2, :e, :f, :c3]
     end
   end
 end

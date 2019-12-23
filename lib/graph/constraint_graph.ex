@@ -97,22 +97,24 @@ defmodule Graph.ConstraintGraph do
         {i, vs} =
           cg
           |> Graph.out_neighbours(v)
-          |> Enum.reduce({i, vs}, fn t, {i, vs} ->
-            l = [{v, t} | Map.get(i, t, [])]
-            i = Map.put(i, t, l)
-
-            vs =
-              if Enum.count(l) == Graph.in_degree(cg, t) do
-                [t | vs]
-              else
-                vs
-              end
-
-            {i, vs}
-          end)
+          |> Enum.reduce({i, vs}, &reduce_constraint(cg, v, &1, &2))
 
         do_find_violated_constraint(vs, cg, i, b)
     end
+  end
+
+  defp reduce_constraint(cg, v, t, {i, vs}) do
+    l = [{v, t} | Map.get(i, t, [])]
+    i = Map.put(i, t, l)
+
+    vs =
+      if Enum.count(l) == Graph.in_degree(cg, t) do
+        [t | vs]
+      else
+        vs
+      end
+
+    {i, vs}
   end
 
   @spec do_find_violated_constraint(Vertex.id(), map, measure_fn) :: constraint | nil

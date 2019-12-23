@@ -29,7 +29,7 @@ defmodule GraphTest do
       refute Graph.is_tree(Graph.add_edge(g, :spqr, :xyzzy))
     end
 
-    @tag edges: [foo: :bar, foo: :baz, bar: :xyzzy, baz: :spqr, spqr: :xyzzy]
+    @tag edges: [foo: :bar, foo: :baz, bar: :xyzzy, baz: :spqr]
     test "is_arborescence/1 returns true if a graph is an arborescence", %{g: g} do
       assert Graph.is_arborescence(g)
     end
