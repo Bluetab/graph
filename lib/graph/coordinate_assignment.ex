@@ -64,4 +64,64 @@ defmodule Graph.CoordinateAssignment do
       |> Enum.find(& &1)
     end
   end
+
+  @spec vertical_alignment(LevelGraph.t(), [conflict]) :: %{align: map(), root: map()}
+  def vertical_alignment(%LevelGraph{g: g} = lg, conflicts) do
+    vs = Graph.vertices(g)
+    vertex_map = Map.new(vs, fn v -> {v, v} end)
+    acc = %{root: vertex_map, align: vertex_map, r: 0, conflicts: MapSet.new(conflicts)}
+    pos_fn = fn v -> Graph.vertex(g, v, :b) end
+
+    nei_fn = fn v ->
+      g
+      |> Graph.in_neighbours(v)
+      |> Enum.sort_by(pos_fn)
+    end
+
+    lg
+    |> LevelGraph.vertices_by_level()
+    |> Enum.sort()
+    |> Enum.reduce(acc, fn {_level, vs}, acc -> do_vertical_alignment(acc, vs, pos_fn, nei_fn) end)
+    |> Map.take([:root, :align])
+  end
+
+  defp do_vertical_alignment(acc, vs, pos_fn, nei_fn) do
+    vs
+    |> Enum.sort_by(pos_fn)
+    |> Enum.reduce(%{acc | r: 0}, fn v, acc ->
+      case nei_fn.(v) do
+        [] ->
+          acc
+
+        us ->
+          mp = (Enum.count(us) - 1) / 2
+
+          floor(mp)
+          |> Range.new(ceil(mp))
+          |> Enum.reduce(acc, fn m, %{align: align, root: root, r: r} = acc ->
+            if Map.get(align, v) == v do
+              u = Enum.at(us, m)
+              pos_u = pos_fn.(u)
+
+              if r < pos_u and not has_conflict?(acc, {u, v}) do
+                %{
+                  acc
+                  | align: %{align | u => v, v => root[u]},
+                    root: %{root | v => root[u]},
+                    r: pos_u
+                }
+              else
+                acc
+              end
+            else
+              acc
+            end
+          end)
+      end
+    end)
+  end
+
+  defp has_conflict?(%{conflicts: conflicts}, conflict) do
+    MapSet.member?(conflicts, conflict)
+  end
 end

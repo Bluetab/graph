@@ -30,7 +30,7 @@ defmodule Graph.CoordinateAssignmentTest do
              [{41, 51}, {41, 52}, {42, 52}, {43, 51}, {45, 53}, {46, 53}]
            ]
            |> Enum.flat_map(& &1)
-    test "type1 conflicts", %{g: g} do
+    test "type1 conflicts and vertical assignment", %{g: g} do
       lg =
         [23, 25, 26, 33, 34, 35, 43, 44, 45, 47]
         |> Enum.reduce(
@@ -41,6 +41,66 @@ defmodule Graph.CoordinateAssignmentTest do
       conflicts = CoordinateAssignment.type1_conflicts(lg)
 
       assert conflicts == [{36, 43}, {31, 46}]
+
+      assert %{root: root, align: align} = CoordinateAssignment.vertical_alignment(lg, conflicts)
+
+      assert align == %{
+               11 => 21,
+               12 => 23,
+               21 => 11,
+               22 => 22,
+               23 => 12,
+               24 => 32,
+               25 => 33,
+               26 => 34,
+               27 => 27,
+               28 => 35,
+               31 => 41,
+               32 => 24,
+               33 => 44,
+               34 => 45,
+               35 => 46,
+               36 => 47,
+               41 => 51,
+               42 => 52,
+               43 => 43,
+               44 => 25,
+               45 => 53,
+               46 => 28,
+               47 => 36,
+               51 => 31,
+               52 => 42,
+               53 => 26
+             }
+
+      assert root == %{
+               11 => 11,
+               12 => 12,
+               21 => 11,
+               22 => 22,
+               23 => 12,
+               24 => 24,
+               25 => 25,
+               26 => 26,
+               27 => 27,
+               28 => 28,
+               31 => 31,
+               32 => 24,
+               33 => 25,
+               34 => 26,
+               35 => 28,
+               36 => 36,
+               41 => 31,
+               42 => 42,
+               43 => 43,
+               44 => 25,
+               45 => 26,
+               46 => 28,
+               47 => 36,
+               51 => 31,
+               52 => 42,
+               53 => 26
+             }
     end
   end
 end
