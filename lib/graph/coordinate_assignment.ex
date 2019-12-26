@@ -6,7 +6,9 @@ defmodule Graph.CoordinateAssignment do
   alias Graph.LevelGraph
   alias Graph.Vertex
 
-  @spec type1_conflicts(LevelGraph.t()) :: [{Vertex.id(), Vertex.id()}]
+  @type conflict :: {Vertex.id(), Vertex.id()}
+
+  @spec type1_conflicts(LevelGraph.t()) :: [conflict]
   def type1_conflicts(%LevelGraph{g: g} = lg) do
     lg
     |> LevelGraph.vertices_by_level()
@@ -17,7 +19,7 @@ defmodule Graph.CoordinateAssignment do
     |> Enum.flat_map(&do_type1_conflicts(&1, g))
   end
 
-  @spec do_type1_conflicts([[Vertex.id()]], Graph.t()) :: [{Vertex.id(), Vertex.id()}]
+  @spec do_type1_conflicts([[Vertex.id()]], Graph.t()) :: [conflict]
   defp do_type1_conflicts([us, vs], %Graph{} = g) do
     vs_count = Enum.count(vs)
 
