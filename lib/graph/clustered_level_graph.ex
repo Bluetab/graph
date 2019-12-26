@@ -145,6 +145,8 @@ defmodule Graph.ClusteredLevelGraph do
     clg =
       min..max
       |> Enum.reduce(clg, fn rank, %__MODULE__{g: %{g: g} = lg, t: t} = acc ->
+        dummy = rank > min and rank < max
+
         t =
           t
           |> Graph.add_vertex({:l, c, rank})
@@ -154,8 +156,8 @@ defmodule Graph.ClusteredLevelGraph do
 
         g =
           g
-          |> Graph.add_vertex({:l, c, rank}, border: :left, r: rank)
-          |> Graph.add_vertex({:r, c, rank}, border: :right, r: rank)
+          |> Graph.add_vertex({:l, c, rank}, border: :left, r: rank, dummy: dummy)
+          |> Graph.add_vertex({:r, c, rank}, border: :right, r: rank, dummy: dummy)
 
         lg = %{lg | g: g}
 
@@ -166,10 +168,12 @@ defmodule Graph.ClusteredLevelGraph do
       min..max
       |> Enum.chunk_every(2, 1, :discard)
       |> Enum.reduce(clg, fn [rank1, rank2], %__MODULE__{g: %{g: g} = lg} = acc ->
+        inner = rank1 > min and rank2 < max
+
         g =
           g
-          |> Graph.add_edge({:l, c, rank1}, {:l, c, rank2})
-          |> Graph.add_edge({:r, c, rank1}, {:r, c, rank2})
+          |> Graph.add_edge({:l, c, rank1}, {:l, c, rank2}, inner: inner)
+          |> Graph.add_edge({:r, c, rank1}, {:r, c, rank2}, inner: inner)
 
         lg = %{lg | g: g}
 

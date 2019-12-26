@@ -4,7 +4,6 @@ defmodule Graph.CrossingReductionTest do
 
   alias Graph.ClusteredLevelGraph
   alias Graph.CrossingReduction
-  alias Graph.NestingGraph
 
   @vertices [
               :grouped_sales,
@@ -197,8 +196,7 @@ defmodule Graph.CrossingReductionTest do
     @tag edges: @edges
     @tag tree: @tree
     test "crossing reduction", %{g: g, t: t} do
-      assert {clg, cross_count} = CrossingReduction.clustered_crossing_reduction(g, t)
-      assert cross_count == 14
+      assert {_, 14 = _cross_count} = CrossingReduction.clustered_crossing_reduction(g, t)
     end
   end
 end
