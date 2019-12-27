@@ -14,8 +14,9 @@ defmodule Graph.LevelGraph do
   defstruct g: %Graph{}, phi: &__MODULE__.default_level_fn/2
 
   @type t :: %__MODULE__{g: Graph.t(), phi: level_fn}
+  @type vertex :: Vertex.id()
   @type level :: pos_integer
-  @type level_fn :: (Graph.t(), Vertex.id() -> level | {:error, :bad_vertex})
+  @type level_fn :: (Graph.t(), vertex -> level | {:error, :bad_vertex})
 
   @spec new(Graph.t()) :: t
   def new(g), do: %__MODULE__{g: g}
@@ -42,7 +43,7 @@ defmodule Graph.LevelGraph do
     |> Enum.all?(&(span(lg, &1) == 1))
   end
 
-  @spec level(t, Vertex.id()) :: level | {:error, :bad_vertex}
+  @spec level(t, vertex) :: level | {:error, :bad_vertex}
   def level(%__MODULE__{g: g, phi: phi}, vertex_id) do
     case Graph.vertex(g, vertex_id) do
       nil -> {:error, :bad_vertex}
@@ -80,17 +81,26 @@ defmodule Graph.LevelGraph do
   Returns a map whose keys are levels and whose values are lists of vertices at
   each level.
   """
-  @spec vertices_by_level(t) :: %{level: [Vertex.id()]}
+  @spec vertices_by_level(t) :: %{level: [vertex]}
   def vertices_by_level(%__MODULE__{g: g} = lg) do
     g
     |> Graph.vertices()
+    |> Enum.sort_by(&Graph.vertex(g, &1, :b))
     |> Enum.group_by(&level(lg, &1))
+  end
+
+  @spec predecessor_map(t) :: %{vertex: vertex}
+  def predecessor_map(%__MODULE__{} = lg) do
+    lg
+    |> vertices_by_level()
+    |> Enum.flat_map(fn {_, vs} -> Enum.chunk_every(vs, 2, 1, :discard) end)
+    |> Map.new(fn [v1, v2] -> {v2, v1} end)
   end
 
   @doc """
   Returns the vertices of a given level of a k-level graph.
   """
-  @spec vertices_by_level(t, level) :: [Vertex.id()]
+  @spec vertices_by_level(t, level) :: [vertex]
   def vertices_by_level(%__MODULE__{g: g} = lg, level) do
     g
     |> Graph.vertices()
@@ -125,7 +135,7 @@ defmodule Graph.LevelGraph do
   @doc """
   Associates `labels` with a vertex of a level graph.
   """
-  @spec put_label(t, Vertex.id(), Vertex.label()) :: t
+  @spec put_label(t, vertex, Vertex.label()) :: t
   def put_label(%__MODULE__{g: g} = lg, v, labels) do
     %{lg | g: Graph.put_label(g, v, labels)}
   end

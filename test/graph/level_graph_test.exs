@@ -33,6 +33,16 @@ defmodule Graph.LevelGraphTest do
         assert LevelGraph.level(lg, v) == v
       end)
     end
+
+    @tag vertices: Map.new(0..11, fn l -> {l, %{b: l + 1, r: 1 + Integer.floor_div(l, 4)}} end)
+    test "predecessor_map/1 returns a map of vertices with their predecessor", %{g: g} do
+      pm =
+        g
+        |> LevelGraph.new(&rank/2)
+        |> LevelGraph.predecessor_map()
+
+      assert pm == %{1 => 0, 2 => 1, 3 => 2, 5 => 4, 6 => 5, 7 => 6, 9 => 8, 10 => 9, 11 => 10}
+    end
   end
 
   defp rank(g, v) do

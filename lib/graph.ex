@@ -550,14 +550,8 @@ defmodule Graph do
 
       ws ->
         case one_path(ws, v, [], [v], [v], 2, g, 1) do
-          false ->
-            case Enum.member?(ws, v) do
-              true -> [v]
-              false -> false
-            end
-
-          vs ->
-            vs
+          false -> if Enum.member?(ws, v), do: [v], else: false
+          vs -> vs
         end
     end
   end
