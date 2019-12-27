@@ -91,11 +91,8 @@ defmodule Graph.CoordinateAssignmentTest do
     @tag vertices: @vertices
     @tag edges: @edges
     @tag dummies: @dummies
-    test("horizontal compaction", %{lg: lg}) do
-      conflicts = CoordinateAssignment.type1_conflicts(lg)
-      root = CoordinateAssignment.vertical_alignment(lg, conflicts)
-
-      assert %LevelGraph{g: g} = CoordinateAssignment.horizontal_compaction(root, lg)
+    test("coordinate assignment: type 1 conflicts, alignment and compaction", %{lg: lg}) do
+      assert %LevelGraph{g: g} = CoordinateAssignment.assign_x(lg)
 
       assert g
              |> Graph.vertices()
