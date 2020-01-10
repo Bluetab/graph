@@ -41,6 +41,14 @@ defmodule Graph.TraversalTest do
       end)
     end
 
+    @tag vertices: [:foo, :bar, :baz, :xyzzy]
+    @tag edges: [foo: :bar, bar: :baz, baz: :foo]
+    test "cyclic_strong_components/1 returns the cyclic strong components of a graph", %{g: g} do
+      assert [cycle] = Traversal.cyclic_strong_components(g)
+      assert Enum.count(cycle) == 3
+      Enum.each([:foo, :bar, :baz], fn v -> assert Enum.member?(cycle, v) end)
+    end
+
     @tag edges: [foo: :bar, bar: :baz, bar: :xyzzy]
     test "reaching/2 returns reaching vertices", %{g: g} do
       assert Traversal.reaching([:xyzzy], g) == [:foo, :bar, :xyzzy]

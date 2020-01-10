@@ -19,6 +19,13 @@ defmodule Graph.Traversal do
     forest(g, &inn/3, revpostorder(g))
   end
 
+  @spec cyclic_strong_components(Graph.t()) :: [component]
+  def cyclic_strong_components(%Graph{} = g) do
+    g
+    |> strong_components()
+    |> Enum.reject(&is_singleton?(g, &1))
+  end
+
   @spec reaching(vertices, Graph.t()) :: vertices
   def reaching(vs, %Graph{} = g) when is_list(vs) do
     g
@@ -153,4 +160,16 @@ defmodule Graph.Traversal do
   end
 
   defp posttraverse([], _g, _t, l), do: l
+
+  @spec is_singleton?(Graph.t(), component) :: boolean
+  defp is_singleton?(g, c)
+
+  defp is_singleton?(%Graph{} = g, [v]) do
+    g
+    |> Graph.out_neighbours(v)
+    |> Enum.member?(v)
+    |> Kernel.not()
+  end
+
+  defp is_singleton?(%Graph{} = g, _), do: false
 end
