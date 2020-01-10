@@ -17,6 +17,7 @@ defmodule Graph.LevelGraph do
   @type vertex :: Vertex.id()
   @type level :: pos_integer
   @type level_fn :: (Graph.t(), vertex -> level | {:error, :bad_vertex})
+  @type direction :: :left | :right
 
   @spec new(Graph.t()) :: t
   def new(g), do: %__MODULE__{g: g}
@@ -57,7 +58,7 @@ defmodule Graph.LevelGraph do
   def span(%__MODULE__{} = lg, %Edge{v1: u, v2: v}) do
     with phi_v when is_integer(phi_v) <- level(lg, v),
          phi_u when is_integer(phi_u) <- level(lg, u) do
-      phi_v - phi_u
+      abs(phi_v - phi_u)
     else
       _ -> {:error, :bad_edge}
     end
@@ -89,13 +90,16 @@ defmodule Graph.LevelGraph do
     |> Enum.group_by(&level(lg, &1))
   end
 
-  @spec predecessor_map(t) :: %{vertex: vertex}
-  def predecessor_map(%__MODULE__{} = lg) do
+  @spec predecessor_map(t, direction) :: %{vertex: vertex}
+  def predecessor_map(%__MODULE__{} = lg, direction \\ :left) do
     lg
     |> vertices_by_level()
     |> Enum.flat_map(fn {_, vs} -> Enum.chunk_every(vs, 2, 1, :discard) end)
-    |> Map.new(fn [v1, v2] -> {v2, v1} end)
+    |> Map.new(pred_transform(direction))
   end
+
+  defp pred_transform(:left), do: fn [v1, v2] -> {v2, v1} end
+  defp pred_transform(:right), do: fn [v1, v2] -> {v1, v2} end
 
   @doc """
   Returns the vertices of a given level of a k-level graph.

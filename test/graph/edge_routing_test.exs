@@ -7,10 +7,14 @@ defmodule Graph.EdgeRoutingTest do
   alias Graph.LevelGraph
   alias Graph.NestingGraph
 
+  @vertices [:root, :a, :b, :a1, :a2, :b1, :b2, 1, 2, 3, 4]
+  @edges [{1, 2}, {2, 3}, {3, 4}, {1, 4}]
+  @tree [root: [a: [a1: [1], a2: [2]], b: [b1: [3], b2: [4]]]]
+
   describe "Edge Routing" do
-    @tag vertices: [:root, :a, :b, :a1, :a2, :b1, :b2, 1, 2, 3, 4]
-    @tag edges: [{1, 2}, {2, 3}, {3, 4}, {1, 4}]
-    @tag tree: [root: [a: [a1: [1], a2: [2]], b: [b1: [3], b2: [4]]]]
+    @tag vertices: @vertices
+    @tag edges: @edges
+    @tag tree: @tree
     test "routes long span edges mostly inside border rectangles", %{g: g, t: t} do
       clg = NestingGraph.new(g, t)
       assert %ClusteredLevelGraph{} = clg

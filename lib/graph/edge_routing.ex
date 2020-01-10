@@ -19,18 +19,20 @@ defmodule Graph.EdgeRouting do
   @spec edge_routing(ClusteredLevelGraph.t(), Vertex.id(), Vertex.id(), Vertex.id()) ::
           %{level: Vertex.id()}
   def edge_routing(%ClusteredLevelGraph{g: lg} = clg, v1, v2, root) do
-    l1 = LevelGraph.level(lg, v1)
-    l2 = LevelGraph.level(lg, v2)
-
     [v1, v2]
-    |> Enum.map(&routing_map(clg, root, &1, l1 + 1, l2 - 1))
-    |> Enum.reduce(&merge_routing_maps/2)
-    |> Map.drop([l1, l2])
+    |> Enum.map(&{LevelGraph.level(lg, &1), &1})
+    |> Enum.sort()
+    |> case do
+      [{l1, v1}, {l2, v2}] ->
+        [v1, v2]
+        |> Enum.map(&routing_map(clg, root, &1, l1 + 1, l2 - 1))
+        |> Enum.reduce(&merge_routing_maps/2)
+    end
   end
 
   defp merge_routing_maps(m1, m2) do
     m1
-    |> Map.merge(m2, fn _k, v1, v2 -> Enum.min_by([v1, v2], fn {_, span} -> span end) end)
+    |> Map.merge(m2, fn _k, v1, v2 -> Enum.min_by([v1, v2], fn {_, span} -> abs(span) end) end)
     |> Map.new(fn {k, {v, _}} -> {k, v} end)
   end
 
@@ -39,11 +41,13 @@ defmodule Graph.EdgeRouting do
     |> Graph.get_short_path(root, v)
     |> Enum.reverse()
     |> tl()
-    |> Enum.flat_map(fn x ->
+    |> Enum.map(fn x ->
       l1 = max(l1, LevelGraph.level(lg, {x, :-}))
       l2 = min(l2, LevelGraph.level(lg, {x, :+}))
-      Enum.map(l1..l2, &{&1, {x, l2 - l1}})
+      {x, l1, l2}
     end)
+    |> Enum.reject(fn {_, l1, l2} -> l2 < l1 end)
+    |> Enum.flat_map(fn {x, l1, l2} -> Enum.map(l1..l2, &{&1, {x, l2 - l1}}) end)
     |> Enum.reduce(%{}, fn {l, v}, acc -> Map.put_new(acc, l, v) end)
   end
 end

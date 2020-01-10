@@ -201,8 +201,11 @@ defmodule Graph.ClusteredLevelGraph do
        ) do
     routing = EdgeRouting.edge_routing(clg, e, root)
 
+    {first, last} = Enum.min_max_by([v1, v2], &LevelGraph.level(lg, &1))
+
     {g, t} =
-      Enum.reduce(routing, {Graph.del_edge(g, edge_id), t, v1}, fn {r, c}, {g, t, w_prev} ->
+      routing
+      |> Enum.reduce({Graph.del_edge(g, edge_id), t, first}, fn {r, c}, {g, t, w_prev} ->
         w = {v1, v2, r}
 
         g =
@@ -217,7 +220,7 @@ defmodule Graph.ClusteredLevelGraph do
 
         {g, t, w}
       end)
-      |> (fn {g, t, w_prev} -> {Graph.add_edge(g, w_prev, v2, l), t} end).()
+      |> (fn {g, t, w_prev} -> {Graph.add_edge(g, w_prev, last, l), t} end).()
 
     lg = %{lg | g: g}
     %{clg | g: lg, t: t}
