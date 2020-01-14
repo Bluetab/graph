@@ -27,11 +27,15 @@ defmodule Graph.RangeMap do
   def put(range_map, range)
 
   def put(%__MODULE__{ranges: rs, counts: cs} = range_map, _.._ = range) do
-    %{
+    if MapSet.member?(rs, range) do
       range_map
-      | counts: Enum.reduce(range, cs, &Map.update(&2, &1, 1, fn c -> c + 1 end)),
-        ranges: MapSet.put(rs, range)
-    }
+    else
+      %{
+        range_map
+        | counts: Enum.reduce(range, cs, &Map.update(&2, &1, 1, fn c -> c + 1 end)),
+          ranges: MapSet.put(rs, range)
+      }
+    end
   end
 
   @doc "Accumulates a singleton range"
