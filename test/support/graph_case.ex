@@ -9,6 +9,8 @@ defmodule GraphCase do
     quote do
       use ExUnit.Case
 
+      import TestOperators
+
       setup tags do
         g =
           case tags[:vertices] do
@@ -44,6 +46,12 @@ defmodule GraphCase do
       defp edges(%Graph{} = g) do
         g
         |> Graph.get_edges(fn {_, {v1, v2, _}} -> {v1, v2} end)
+        |> Enum.sort()
+      end
+
+      defp out_neighbours(%Graph{} = g, v) do
+        g
+        |> Graph.out_neighbours(v)
         |> Enum.sort()
       end
     end

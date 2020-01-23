@@ -99,14 +99,37 @@ defmodule Graph.CoordinateAssignmentTest do
              |> Enum.group_by(&Graph.vertex(g, &1, :x)) ==
                %{
                  0 => [11, 21],
-                 1 => [22, 31, 41, 51],
-                 2 => [12, 23, 42, 52],
-                 3 => [24, 32, 43],
-                 4 => [25, 33, 44],
-                 5 => [26, 34, 45, 53],
-                 6 => [27],
-                 7 => [28, 35, 46],
-                 8 => [36, 47]
+                 2 => [22, 31, 41, 51],
+                 4 => [12, 23, 42, 52],
+                 6 => [24, 32, 43],
+                 8 => [25, 33, 44],
+                 10 => [26, 34, 45, 53],
+                 12 => [27],
+                 14 => [28, 35, 46],
+                 16 => [36, 47]
+               }
+    end
+
+    @tag vertices: @vertices
+    @tag edges: @edges
+    @tag dummies: @dummies
+    test("coordinate assignment: average median position", %{lg: lg}) do
+      assert %LevelGraph{g: g} = CoordinateAssignment.assign_avg_x(lg)
+
+      assert g
+             |> Graph.vertices()
+             |> Enum.group_by(&Graph.vertex(g, &1, :x)) ==
+               %{
+                 0.0 => [21],
+                 2.0 => [22, 41, 51],
+                 3.0 => [31],
+                 4.0 => [23, 42, 52],
+                 5.0 => [11],
+                 6.0 => [24, 32, 43],
+                 8.0 => [12, 25, 33, 44],
+                 10.0 => [26, 34, 45, 53],
+                 13.0 => [27, 35, 46],
+                 15.0 => [28, 36, 47]
                }
     end
   end

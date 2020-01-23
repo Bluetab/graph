@@ -94,7 +94,7 @@ defmodule Graph.CrossingReductionTest do
     test "sweep down", %{g: g, t: t} do
       crgs =
         g
-        |> CrossingReduction.nesting_graph(t)
+        |> CrossingReduction.normalize(t)
         |> ClusteredLevelGraph.subgraph([10, 11])
         |> CrossingReduction.crossing_reduction_graphs(:down)
 
@@ -129,7 +129,7 @@ defmodule Graph.CrossingReductionTest do
     test "sweep up", %{g: g, t: t} do
       crgs =
         g
-        |> CrossingReduction.nesting_graph(t)
+        |> CrossingReduction.normalize(t)
         |> ClusteredLevelGraph.subgraph([10, 11])
         |> CrossingReduction.crossing_reduction_graphs(:up)
 
@@ -172,7 +172,7 @@ defmodule Graph.CrossingReductionTest do
     test "constraints", %{g: g, t: t} do
       crossing_reduction =
         g
-        |> CrossingReduction.nesting_graph(t)
+        |> CrossingReduction.normalize(t)
         |> ClusteredLevelGraph.subgraph([19, 20])
         |> CrossingReduction.crossing_reduction_graphs(:down)
 
@@ -196,7 +196,8 @@ defmodule Graph.CrossingReductionTest do
     @tag edges: @edges
     @tag tree: @tree
     test "crossing reduction", %{g: g, t: t} do
-      assert {_, 14 = _cross_count} = CrossingReduction.clustered_crossing_reduction(g, t)
+      assert %ClusteredLevelGraph{crossings: 14} =
+               CrossingReduction.clustered_crossing_reduction(g, t)
     end
   end
 end

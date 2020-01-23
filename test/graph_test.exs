@@ -1,7 +1,6 @@
 defmodule GraphTest do
   use GraphCase
 
-  alias Graph
   alias Graph.Edge
 
   doctest Graph
@@ -9,7 +8,8 @@ defmodule GraphTest do
   describe "A graph" do
     @tag edges: [foo: :bar, bar: :baz, bar: :xyzzy, baz: :spqr, xyzzy: :spqr]
     test "get_path/3 returns a path", %{g: g} do
-      assert Graph.get_path(g, :foo, :spqr) == [:foo, :bar, :baz, :spqr]
+      assert [:foo, :bar, v, :spqr] = Graph.get_path(g, :foo, :spqr)
+      assert Enum.member?([:baz, :xyzzy], v)
     end
 
     @tag edges: [foo: :bar, bar: :baz, bar: :xyzzy, baz: :spqr, xyzzy: :spqr]

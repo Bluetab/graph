@@ -6,7 +6,7 @@ defmodule Graph.CrossingReductionGraph do
   alias Graph.LevelGraph
 
   @type constraint_graph :: Graph.t()
-  @type t :: %{g: LevelGraph.t(), gc: constraint_graph}
+  @type t :: %__MODULE__{g: LevelGraph.t(), gc: constraint_graph}
 
   defstruct g: %LevelGraph{}, gc: %Graph{}
 
@@ -14,6 +14,7 @@ defmodule Graph.CrossingReductionGraph do
   Return a new crossing reduction graph consisting of a 2-level graph `g` and
   it's constraint graph `gc`.
   """
+  @spec new(LevelGraph.t(), constraint_graph) :: t
   def new(%LevelGraph{} = g, %Graph{} = gc) do
     %__MODULE__{g: g, gc: gc}
   end

@@ -9,6 +9,8 @@ defmodule TreeCase do
     quote do
       use ExUnit.Case
 
+      import TestOperators
+
       setup tags do
         case tags[:tree] do
           nil -> :ok

@@ -2,7 +2,6 @@ defmodule Graph.ClusterTreeTest do
   use GraphCase
 
   alias Graph.ClusterTree
-  alias Graph.Edge
   alias Graph.Traversal
 
   doctest Graph.ClusterTree
@@ -18,8 +17,8 @@ defmodule Graph.ClusterTreeTest do
 
       assert Graph.vertices(t1) == [1, 2, :a]
       assert Graph.vertices(t2) == [3, 4, :c]
-      assert Graph.get_edges(t1, &Edge.entry_pair/1) == [a: 1, a: 2]
-      assert Graph.get_edges(t2, &Edge.entry_pair/1) == [c: 3, c: 4]
+      assert edges(t1) == [a: 1, a: 2]
+      assert edges(t2) == [c: 3, c: 4]
     end
 
     @tag edges: [root: :foo, foo: :bar, foo: :baz, bar: :xyzzy, bar: :spqr]

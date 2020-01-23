@@ -54,8 +54,16 @@ defmodule Graph do
       [:bar, :foo]
 
   """
-  @spec new(Enumerable.t(), Keyword.t()) :: t
-  def new(vertices, opts \\ [])
+  @spec new(Enumerable.t() | t, Keyword.t()) :: t
+  def new(enumerable_or_graph, opts \\ [])
+
+  def new(%__MODULE__{} = g, opts) do
+    if Keyword.get(opts, :edges, true) do
+      %{g | opts: opts}
+    else
+      %{g | edges: %{}, in_edges: %{}, out_edges: %{}, opts: opts}
+    end
+  end
 
   def new(%{} = vertices, opts) do
     Enum.reduce(vertices, %__MODULE__{opts: opts}, fn {v, label}, g -> add_vertex(g, v, label) end)
@@ -147,9 +155,14 @@ defmodule Graph do
     Map.get(vertices, id)
   end
 
-  @spec vertices(t) :: [vertex_id]
-  def vertices(%__MODULE__{vertices: vertices}) do
-    Map.keys(vertices)
+  @spec vertex_labels(t) :: [Vertex.label()]
+  def vertex_labels(%__MODULE__{vertices: vertices}) do
+    Map.values(vertices)
+  end
+
+  @spec vertices(t, Keyword.t()) :: [vertex_id]
+  def vertices(%__MODULE__{vertices: vertices}, opts \\ []) do
+    if opts[:labels], do: vertices, else: Map.keys(vertices)
   end
 
   @spec has_vertex?(t, vertex_id) :: boolean
@@ -208,22 +221,24 @@ defmodule Graph do
 
   @spec add_edge(t, vertex_id, vertex_id, Enumerable.t()) :: t | {:error, any}
   def add_edge(%__MODULE__{} = g, v1, v2, label \\ %{}) do
-    edge_id = next_edge_id(g)
+    edge_id = random_edge_id(g)
     do_add_edge(g, {edge_id, v1, v2, label})
   end
 
-  defp next_edge_id(%__MODULE__{edges: edges}) do
-    id =
-      edges
-      |> Map.keys()
-      |> Enum.filter(fn
-        [:_e | _] -> true
-        _ -> false
-      end)
-      |> Enum.map(&tl/1)
-      |> Enum.max(fn -> 0 end)
+  @spec has_edge?(t, vertex_id, vertex_id) :: boolean | {:error, {:bad_vertex, vertex_id}}
+  def has_edge?(%__MODULE__{} = g, v1, v2) do
+    g
+    |> out_neighbours(v1)
+    |> Enum.member?(v2)
+  end
 
-    [:_e | id + 1]
+  defp random_edge_id(%__MODULE__{edges: edges} = g) do
+    with id <- [:_e | :rand.uniform(1_000_000)],
+         false <- Map.has_key?(edges, id) do
+      id
+    else
+      true -> random_edge_id(g)
+    end
   end
 
   @spec add_edge(t, edge_id, vertex_id, vertex_id, Enumerable.t()) :: t | {:error, any}
@@ -238,8 +253,10 @@ defmodule Graph do
 
       iex> g = Graph.new([:foo, :bar, :baz])
       iex> g = Graph.add_edges(g, [{:foo, :bar}, {:bar, :baz}])
-      iex> Graph.edges(g)
-      [[:_e | 1], [:_e | 2]]
+      iex> Graph.out_neighbours(g, :foo)
+      [:bar]
+      iex> Graph.out_neighbours(g, :bar)
+      [:baz]
 
   """
   @spec add_edges(t, Enumerable.t()) :: t
@@ -410,7 +427,8 @@ defmodule Graph do
   @spec subgraph(t, [vertex_id]) :: t
   def subgraph(
         %__MODULE__{vertices: vertices, edges: edges, in_edges: in_edges, out_edges: out_edges},
-        vs
+        vs,
+        opts \\ []
       ) do
     vm = MapSet.new(vs)
 
@@ -424,10 +442,17 @@ defmodule Graph do
     edges
     |> Map.take(edge_ids)
     |> Enum.filter(fn {_, {v1, v2, _}} -> MapSet.member?(vm, v1) and MapSet.member?(vm, v2) end)
+    |> reverse_edges(opts[:reverse])
     |> Enum.reduce(new(Map.take(vertices, vs)), fn {edge_id, {v1, v2, label}}, sg ->
       add_edge(sg, edge_id, v1, v2, label)
     end)
   end
+
+  defp reverse_edges(edges, true) do
+    Enum.map(edges, fn {edge_id, {v1, v2, label}} -> {edge_id, {v2, v1, label}} end)
+  end
+
+  defp reverse_edges(edges, _false), do: edges
 
   @spec do_del_vertex(t, vertex_id) :: t
   defp do_del_vertex(%__MODULE__{vertices: vs, edges: edges}, v) do
@@ -675,6 +700,10 @@ defmodule Graph do
     g
     |> out_edges(v)
     |> List.foldl(q0, fn e, q -> :queue.in(e, q) end)
+  end
+
+  def is_acyclic?(%__MODULE__{} = g) do
+    Traversal.loop_vertices(g) == [] and Traversal.topsort(g) != false
   end
 
   defimpl Inspect do

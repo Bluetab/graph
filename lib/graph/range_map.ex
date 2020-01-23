@@ -88,4 +88,26 @@ defmodule Graph.RangeMap do
     range_map = pop(range_map, max)
     {max, range_map}
   end
+
+  def union(%__MODULE__{} = rm, %__MODULE__{ranges: ranges}) do
+    Enum.reduce(ranges, rm, &put(&2, &1))
+  end
+
+  def span(%__MODULE__{counts: counts} = _rm) do
+    {min, max} =
+      counts
+      |> Map.keys()
+      |> Enum.min_max()
+
+    min..max
+  end
+
+  defimpl Inspect do
+    import Inspect.Algebra
+
+    def inspect(%Graph.RangeMap{ranges: rs}, opts) do
+      opts = %Inspect.Opts{opts | charlists: :as_lists}
+      concat(["#RangeMap<", Inspect.List.inspect(MapSet.to_list(rs), opts), ">"])
+    end
+  end
 end

@@ -1,7 +1,6 @@
 defmodule Graph.TraversalTest do
   use GraphCase
 
-  alias Graph.Edge
   alias Graph.Traversal
 
   doctest Graph.Traversal
@@ -51,17 +50,17 @@ defmodule Graph.TraversalTest do
 
     @tag edges: [foo: :bar, bar: :baz, bar: :xyzzy]
     test "reaching/2 returns reaching vertices", %{g: g} do
-      assert Traversal.reaching([:xyzzy], g) == [:foo, :bar, :xyzzy]
+      assert Traversal.reaching([:xyzzy], g) <~> [:foo, :bar, :xyzzy]
     end
 
     @tag edges: [foo: :bar, bar: :baz, bar: :xyzzy, spqr: :foo]
     test "reachable/2 returns reachable vertices", %{g: g} do
-      assert Traversal.reachable([:foo], g) == [:xyzzy, :baz, :bar, :foo]
+      assert Traversal.reachable([:foo], g) <~> [:xyzzy, :baz, :bar, :foo]
     end
 
     @tag edges: [foo: :bar, bar: :baz, bar: :xyzzy]
     test "reachable_neighbours/2 returns reachable neighbouring vertices", %{g: g} do
-      assert Traversal.reachable_neighbours([:foo], g) == [:xyzzy, :baz, :bar]
+      assert Traversal.reachable_neighbours([:foo], g) <~> [:xyzzy, :baz, :bar]
     end
 
     @tag edges: [foo: :bar, foo: :baz, bar: :xyzzy, baz: :spqr]
@@ -77,8 +76,8 @@ defmodule Graph.TraversalTest do
 
       assert Graph.vertices(t1) == [1, 2, :a, :b]
       assert Graph.vertices(t2) == [3, 4, :a, :b, :c]
-      assert Graph.get_edges(t1, &Edge.entry_pair/1) == [a: 1, a: :b, b: 2]
-      assert Graph.get_edges(t2, &Edge.entry_pair/1) == [a: :b, b: :c, c: 3, c: 4]
+      assert edges(t1) == [a: 1, a: :b, b: 2]
+      assert edges(t2) == [a: :b, b: :c, c: 3, c: 4]
     end
   end
 end

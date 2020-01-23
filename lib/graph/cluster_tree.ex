@@ -4,6 +4,7 @@ defmodule Graph.ClusterTree do
   """
 
   alias Graph.Edge
+  alias Graph.Traversal
   alias Graph.Vertex
 
   @doc """
@@ -31,6 +32,7 @@ defmodule Graph.ClusterTree do
     do_contract(g)
   end
 
+  @spec do_contract(Graph.t()) :: Graph.t()
   defp do_contract(%Graph{} = g) do
     g
     |> Graph.vertices()
@@ -38,6 +40,7 @@ defmodule Graph.ClusterTree do
     |> do_contract(g)
   end
 
+  @spec do_contract([Vertex.id()], Graph.t()) :: Graph.t()
   defp do_contract([], %Graph{} = g), do: g
 
   defp do_contract([v | _], %Graph{} = g) do
@@ -47,9 +50,9 @@ defmodule Graph.ClusterTree do
     |> do_contract()
   end
 
+  @spec do_contract([Vertex.id()], Vertex.id(), Graph.t()) :: Graph.t()
   defp do_contract([], v, %Graph{} = g) do
-    g
-    |> Graph.del_vertex(v)
+    Graph.del_vertex(g, v)
   end
 
   defp do_contract([parent], v, %Graph{} = g) do
@@ -64,13 +67,15 @@ defmodule Graph.ClusterTree do
     |> Graph.del_vertex(v)
   end
 
+  @spec depth(Graph.t()) :: non_neg_integer
   def depth(%Graph{} = t) do
     case Graph.source_vertices(t) do
       [root] -> do_depth(t, root, 0)
     end
   end
 
-  defp do_depth(t, v, d) do
+  @spec do_depth(Graph.t(), Vertex.id(), non_neg_integer) :: non_neg_integer
+  defp do_depth(%Graph{} = t, v, d) do
     case Graph.out_neighbours(t, v) do
       [] ->
         d
@@ -80,5 +85,33 @@ defmodule Graph.ClusterTree do
         |> Enum.map(&do_depth(t, &1, d + 1))
         |> Enum.max()
     end
+  end
+
+  @spec height(Graph.t()) :: non_neg_integer
+  def height(%Graph{} = t) do
+    case Graph.source_vertices(t) do
+      [root] -> height(t, root)
+    end
+  end
+
+  @spec height(Graph.t(), Vertex.id()) :: non_neg_integer
+  def height(%Graph{} = t, v) do
+    case Graph.out_neighbours(t, v) do
+      [] ->
+        0
+
+      vs ->
+        vs
+        |> Enum.map(&height(t, &1))
+        |> Enum.max()
+        |> Kernel.+(1)
+    end
+  end
+
+  @spec post_order_clusters(Graph.t()) :: [Vertex.id()]
+  def post_order_clusters(%Graph{} = t) do
+    t
+    |> Traversal.post_order()
+    |> Enum.reject(&(Graph.out_degree(t, &1) == 0))
   end
 end

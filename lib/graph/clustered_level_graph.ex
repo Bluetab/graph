@@ -11,7 +11,7 @@ defmodule Graph.ClusteredLevelGraph do
   alias Graph.Traversal
   alias Graph.Vertex
 
-  defstruct g: %LevelGraph{}, t: %Graph{}
+  defstruct g: %LevelGraph{}, t: %Graph{}, crossings: 0
 
   @type t :: %__MODULE__{g: LevelGraph.t(), t: Graph.t()}
   @type span :: {pos_integer, pos_integer}
@@ -23,15 +23,29 @@ defmodule Graph.ClusteredLevelGraph do
   """
   @spec new(LevelGraph.t(), Graph.t()) :: t
   def new(%LevelGraph{g: g} = lg, %Graph{} = t) do
-    if Graph.vertices(g) != Graph.sink_vertices(t) do
-      raise(ArgumentError, "vertices must match")
+    with v1s <- Graph.vertices(g),
+         v2s <- Graph.sink_vertices(t),
+         [] <- diff(v1s, v2s),
+         Graph.is_arborescence(t) do
+      %__MODULE__{g: lg, t: t}
+    else
+      [_ | _] = vs -> raise(ArgumentError, "vertices must match (#{inspect(vs)}")
+      false -> raise(ArgumentError, "second argument must be an arborescence")
     end
+  end
 
-    unless Graph.is_tree(t) do
-      raise(ArgumentError, "second argument must be a tree")
+  defp diff(v1s, v2s) do
+    v1s = MapSet.new(v1s)
+    v2s = MapSet.new(v2s)
+
+    if v1s == v2s do
+      []
+    else
+      v1s
+      |> MapSet.difference(v2s)
+      |> MapSet.union(MapSet.difference(v2s, v1s))
+      |> MapSet.to_list()
     end
-
-    %__MODULE__{g: lg, t: t}
   end
 
   @doc """
@@ -183,6 +197,45 @@ defmodule Graph.ClusteredLevelGraph do
     clg
   end
 
+  def concentrate_dummy_edges(%__MODULE__{g: %{g: g} = lg} = clg) do
+    {out_edges, in_edges} =
+      g
+      |> Graph.get_edges(fn {_, {v1, v2, _}} -> {v1, v2} end)
+      |> Enum.filter(fn
+        {v1, {v1, _, _} = v2} -> LevelGraph.level(lg, v2) == LevelGraph.level(lg, v1) + 1
+        {{_, v2, _} = v1, v2} -> LevelGraph.level(lg, v2) == LevelGraph.level(lg, v1) + 1
+        _ -> false
+      end)
+      |> Enum.split_with(fn
+        {v1, {v1, _, _} = _v2} -> true
+        _ -> false
+      end)
+
+    clg =
+      out_edges
+      |> Enum.map(&elem(&1, 1))
+      |> Enum.group_by(&elem(&1, 0))
+      |> Enum.filter(fn {_v1, v2s} -> Enum.count(v2s) > 1 end)
+      |> Enum.map(fn {_v1, [v2 | v2s]} -> {v2, v2s} end)
+      |> Enum.reduce(clg, &concentrate_dummy_edge/2)
+
+    in_edges
+    |> Enum.map(&elem(&1, 0))
+    |> Enum.group_by(&elem(&1, 1))
+    |> Enum.filter(fn {_v2, v1s} -> Enum.count(v1s) > 1 end)
+    |> Enum.map(fn {_v2, [v1 | v1s]} -> {v1, v1s} end)
+    |> Enum.reduce(clg, &concentrate_dummy_edge/2)
+  end
+
+  defp concentrate_dummy_edge({v2, v2s}, %__MODULE__{g: %{g: g} = lg, t: t} = clg) do
+    in_neighbours = Enum.flat_map(v2s, &Graph.in_neighbours(g, &1))
+    out_neighbours = Enum.flat_map(v2s, &Graph.out_neighbours(g, &1))
+    g = Graph.del_vertices(g, v2s)
+    g = Enum.reduce(in_neighbours, g, &Graph.add_edge(&2, &1, v2))
+    g = Enum.reduce(out_neighbours, g, &Graph.add_edge(&2, v2, &1))
+    %{clg | g: %{lg | g: g}, t: Graph.del_vertices(t, v2s)}
+  end
+
   @spec split_long_edges(t) :: t
   def split_long_edges(%__MODULE__{g: lg, t: t} = clg) do
     case Graph.source_vertices(t) do
@@ -190,6 +243,8 @@ defmodule Graph.ClusteredLevelGraph do
         lg
         |> LevelGraph.long_span_edges()
         |> Enum.reduce(clg, &split_long_edge(&2, &1, root))
+
+        # |> concentrate_dummy_edges()
     end
   end
 
@@ -203,8 +258,12 @@ defmodule Graph.ClusteredLevelGraph do
 
     {first, last} = Enum.min_max_by([v1, v2], &LevelGraph.level(lg, &1))
 
+    # [l1, l2] = Enum.map([first, last], &LevelGraph.level(lg, &1))
+    # validate(routing, l1, l2, first, last)
+
     {g, t} =
       routing
+      |> Enum.sort()
       |> Enum.reduce({Graph.del_edge(g, edge_id), t, first}, fn {r, c}, {g, t, w_prev} ->
         w = {v1, v2, r}
 
@@ -224,6 +283,19 @@ defmodule Graph.ClusteredLevelGraph do
 
     lg = %{lg | g: g}
     %{clg | g: lg, t: t}
+  end
+
+  defp validate(%{} = routing, l1, l2, first, last) do
+    case routing |> Map.keys() |> Enum.min_max() do
+      {min, max} when min == l1 + 1 and max == l2 - 1 ->
+        :ok
+
+      {min, max} ->
+        %{l1: l1, l2: l2, min: min, max: max, first: first, last: last, routing: routing}
+        |> IO.inspect(width: 160)
+
+        raise("Invalid routing")
+    end
   end
 
   @doc """

@@ -52,7 +52,7 @@ defmodule Graph.MixProject do
     [
       main: "Graph",
       extras: ["README.md"],
-      before_closing_body_tag: &mathjax_resources/1,
+      before_closing_body_tag: &mathjax_resources/1
     ]
   end
 
@@ -61,7 +61,8 @@ defmodule Graph.MixProject do
     [
       {:credo, "~> 1.1.0", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0.0-rc.7", only: [:dev], runtime: false},
-      {:ex_doc, "~> 0.21", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.21", only: :dev, runtime: false},
+      {:jason, "~> 1.0"}
     ]
   end
 end

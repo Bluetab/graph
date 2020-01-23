@@ -165,11 +165,26 @@ defmodule Graph.Traversal do
   defp is_singleton?(g, c)
 
   defp is_singleton?(%Graph{} = g, [v]) do
+    not is_reflexive_vertex(g, v)
+  end
+
+  defp is_singleton?(%Graph{} = _g, _), do: false
+
+  def loop_vertices(%Graph{} = g) do
+    g
+    |> Graph.vertices()
+    |> Enum.filter(&is_reflexive_vertex(g, &1))
+  end
+
+  def post_order(%Graph{} = g) do
+    g
+    |> topsort()
+    |> Enum.reverse()
+  end
+
+  defp is_reflexive_vertex(%Graph{} = g, v) do
     g
     |> Graph.out_neighbours(v)
     |> Enum.member?(v)
-    |> Kernel.not()
   end
-
-  defp is_singleton?(%Graph{} = g, _), do: false
 end

@@ -44,7 +44,7 @@ defmodule Graph.NestingGraph do
     |> rank_assignment()
     |> delete_nesting_edges()
     |> insert_cyclic_edges(cycles)
-    |> LevelGraph.new(fn g, v -> rank(g, v) end)
+    |> LevelGraph.new(:r)
     |> ClusteredLevelGraph.new(t)
   end
 
@@ -75,6 +75,13 @@ defmodule Graph.NestingGraph do
     |> Enum.map(fn %{v1: v1, v2: v2} -> edge_spec(t, v1, v2, is_leaf?.(v1), is_leaf?.(v2)) end)
     |> Enum.sort()
     |> Enum.reduce({ng, []}, &add_edge/2)
+  end
+
+  def add_labels(%Graph{} = ng, %Graph{} = g, labels) do
+    g
+    |> Graph.vertices(labels: true)
+    |> Enum.map(fn {v, l} -> {v, Map.take(l, labels)} end)
+    |> Enum.reduce(ng, fn {v, label}, ng -> Graph.put_label(ng, v, label) end)
   end
 
   @spec edge_spec(Graph.t(), Vertex.id(), Vertex.id(), boolean, boolean) ::
@@ -127,7 +134,8 @@ defmodule Graph.NestingGraph do
 
     vs
     |> Enum.group_by(&rank(g, &1))
-    |> Map.values()
+    |> Enum.sort()
+    |> Enum.map(&elem(&1, 1))
     |> Enum.with_index(1)
     |> Enum.flat_map(fn {vs, r} -> Enum.map(vs, &{&1, r}) end)
     |> Enum.reduce(g, fn {v, r}, acc -> Graph.put_label(acc, v, r: r) end)
@@ -212,9 +220,15 @@ defmodule Graph.NestingGraph do
 
       r =
         case v do
-          {_, :-} -> 1 + x
-          {_, :+} -> 1 + x
-          _ -> floor(1 + x / spacing) * spacing
+          {_, :-} ->
+            1 + x
+
+          {_, :+} ->
+            1 + x
+
+          _ ->
+            shift = Graph.vertex(g, v, :shift) || 0
+            (shift + floor(1 + x / spacing)) * spacing
         end
 
       Graph.put_label(acc, v, r: r)

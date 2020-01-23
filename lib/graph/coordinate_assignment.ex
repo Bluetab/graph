@@ -7,17 +7,116 @@ defmodule Graph.CoordinateAssignment do
   alias Graph.Traversal
   alias Graph.Vertex
 
+  require Logger
+
   @type vertex :: Vertex.id()
   @type conflict :: {vertex, vertex}
+  @type horizontal :: :left | :right
+  @typep vertex_map :: %{vertex: vertex}
 
-  @delta 1
+  @delta 2
 
-  @spec assign_x(LevelGraph.t()) :: LevelGraph.t()
-  def assign_x(%LevelGraph{} = lg) do
-    lg
-    |> type1_conflicts()
-    |> do_vertical_alignment(lg)
-    |> horizontal_compaction(lg)
+  @spec assign_avg_x(LevelGraph.t()) :: LevelGraph.t()
+  def assign_avg_x(%LevelGraph{g: g} = lg) do
+    conflicts = type1_conflicts(lg)
+
+    bgs =
+      Enum.flat_map([:left, :right], fn horizontal_direction ->
+        Enum.map([:up, :down], fn vertical_direction ->
+          lg
+          |> vertical_alignment(conflicts, vertical_direction, horizontal_direction)
+          |> horizontal_compaction(lg, horizontal_direction)
+        end)
+      end)
+      |> align_to_narrowest()
+
+    g
+    |> Graph.vertices()
+    |> Enum.reduce(lg, fn v, lg ->
+      LevelGraph.put_label(lg, v, %{x: average_median(bgs, v, :x)})
+    end)
+  end
+
+  @spec assign_x(LevelGraph.t(), Keyword.t()) :: LevelGraph.t()
+  def assign_x(%LevelGraph{g: g} = lg, opts \\ []) do
+    vdir = Keyword.get(opts, :vdir, :down)
+    hdir = Keyword.get(opts, :hdir, :left)
+
+    conflicts = type1_conflicts(lg)
+
+    {root, bg} =
+      lg
+      |> vertical_alignment(conflicts, vdir, hdir)
+      |> horizontal_compaction(lg, hdir)
+
+    g
+    |> Graph.vertices()
+    |> Enum.reduce(lg, assign_x_reducer(bg, root, hdir))
+  end
+
+  @spec assign_x_reducer(Graph.t(), vertex_map, horizontal) ::
+          (vertex, LevelGraph.t() -> LevelGraph.t())
+  defp assign_x_reducer(%Graph{} = block_graph, %{} = roots, hdir) do
+    fn v, lg ->
+      with root <- Map.get(roots, v),
+           x <- Graph.vertex(block_graph, root, :x) do
+        LevelGraph.put_label(lg, v, %{x: x_pos(x, hdir)})
+      end
+    end
+  end
+
+  defp align_to_narrowest(bgs) do
+    spans =
+      bgs
+      |> Enum.map(&x_span/1)
+
+    [x_min, x_max] = Enum.min_by(spans, fn [min, max] -> max - min end)
+
+    spans
+    |> Enum.with_index()
+    |> Enum.map(fn
+      {[x, _], 0} when x > x_min -> x - x_min
+      {[x, _], 1} when x > x_min -> x - x_min
+      {[_, x], _} when x < x_max -> x_max - x
+      _ -> 0
+    end)
+    |> Enum.map(fn x ->
+      case x_min do
+        0 -> x
+        n -> x - n
+      end
+    end)
+    |> Enum.zip(bgs)
+    |> Enum.map(fn
+      {0, lg} ->
+        lg
+
+      {n, {root, %Graph{} = g}} ->
+        {root,
+         g
+         |> Graph.vertices(labels: true)
+         |> Enum.map(fn {v, %{x: x}} -> {v, x + n} end)
+         |> Enum.reduce(g, fn {v, x}, acc -> Graph.put_label(acc, v, x: x) end)}
+    end)
+  end
+
+  defp x_span({_root, %Graph{} = g}) do
+    g
+    |> Graph.vertex_labels()
+    |> Enum.map(&Map.get(&1, :x))
+    |> Enum.min_max()
+    |> Tuple.to_list()
+  end
+
+  defp average_median(bgs, v, label) do
+    bgs
+    |> Enum.map(fn {root, %Graph{} = g} ->
+      v = Map.get(root, v)
+      Graph.vertex(g, v, label)
+    end)
+    |> Enum.sort()
+    |> Enum.slice(1, 2)
+    |> Enum.reduce(fn x1, x2 -> (x1 + x2) / 2 end)
   end
 
   @spec type1_conflicts(LevelGraph.t()) :: [conflict]
@@ -77,30 +176,37 @@ defmodule Graph.CoordinateAssignment do
     end
   end
 
-  @spec do_vertical_alignment([conflict], LevelGraph.t()) :: %{vertex: vertex}
-  def do_vertical_alignment(conflicts, %LevelGraph{} = lg) do
-    vertical_alignment(lg, conflicts)
-  end
-
   @spec vertical_alignment(LevelGraph.t(), [conflict]) :: %{vertex: vertex}
-  def vertical_alignment(%LevelGraph{g: g} = lg, conflicts) do
+  def vertical_alignment(%LevelGraph{g: g} = lg, conflicts, v_dir \\ :down, h_dir \\ :left) do
     vs = Graph.vertices(g)
     vertex_map = Map.new(vs, fn v -> {v, v} end)
     acc = %{root: vertex_map, align: vertex_map, r: 0, conflicts: MapSet.new(conflicts)}
-    pos_fn = fn v -> Graph.vertex(g, v, :b) end
-
-    nei_fn = fn v ->
-      g
-      |> Graph.in_neighbours(v)
-      |> Enum.sort_by(pos_fn)
-    end
+    pos_fn = pos_fn(g, h_dir)
+    nei_fn = nei_fn(g, pos_fn, v_dir)
 
     lg
     |> LevelGraph.vertices_by_level()
-    |> Enum.sort()
+    |> sort_levels(v_dir)
     |> Enum.reduce(acc, fn {_level, vs}, acc -> do_vertical_alignment(acc, vs, pos_fn, nei_fn) end)
     |> Map.get(:root)
   end
+
+  defp sort_levels(levels, :down), do: Enum.sort(levels)
+  defp sort_levels(levels, :up), do: Enum.sort(levels, &(&1 >= &2))
+  defp pos_fn(%Graph{} = g, :left), do: &Graph.vertex(g, &1, :b)
+  # negate?
+  defp pos_fn(%Graph{} = g, :right), do: &Graph.vertex(g, &1, :b)
+
+  defp nei_fn(%Graph{} = g, pos_fn, direction) do
+    fn v ->
+      g
+      |> neighbours(v, direction)
+      |> Enum.sort_by(pos_fn)
+    end
+  end
+
+  defp neighbours(%Graph{} = g, v, :down), do: Graph.in_neighbours(g, v)
+  defp neighbours(%Graph{} = g, v, :up), do: Graph.out_neighbours(g, v)
 
   defp do_vertical_alignment(acc, vs, pos_fn, nei_fn) do
     vs
@@ -115,99 +221,132 @@ defmodule Graph.CoordinateAssignment do
 
           floor(mp)
           |> Range.new(ceil(mp))
-          |> Enum.reduce(acc, fn m, %{align: align, root: root, r: r} = acc ->
-            case Map.get(align, v) do
-              ^v ->
-                u = Enum.at(us, m)
-                pos_u = pos_fn.(u)
-
-                if r < pos_u and not has_conflict?(acc, {u, v}) do
-                  %{
-                    acc
-                    | align: %{align | u => v, v => root[u]},
-                      root: %{root | v => root[u]},
-                      r: pos_u
-                  }
-                else
-                  acc
-                end
-
-              _ ->
-                acc
-            end
-          end)
+          |> Enum.reduce(acc, vertical_alignment_reducer(v, us, pos_fn))
       end
     end)
+  end
+
+  defp vertical_alignment_reducer(v, us, pos_fn) do
+    fn m, %{align: align, root: root, r: r} = acc ->
+      case Map.get(align, v) do
+        ^v ->
+          u = Enum.at(us, m)
+          pos_u = pos_fn.(u)
+
+          if r < pos_u and not has_conflict?(acc, {u, v}) do
+            %{
+              acc
+              | align: %{align | u => v, v => root[u]},
+                root: %{root | v => root[u]},
+                r: pos_u
+            }
+          else
+            acc
+          end
+
+        _ ->
+          acc
+      end
+    end
   end
 
   defp has_conflict?(%{conflicts: conflicts}, conflict) do
     MapSet.member?(conflicts, conflict)
   end
 
-  @spec horizontal_compaction(%{vertex: vertex}, LevelGraph.t()) :: LevelGraph.t()
-  def horizontal_compaction(%{} = root, %LevelGraph{} = lg) do
+  @spec horizontal_compaction(vertex_map, LevelGraph.t(), horizontal) :: {vertex_map, Graph.t()}
+  def horizontal_compaction(%{} = root, %LevelGraph{g: g} = lg, direction \\ :left) do
     bg =
       root
-      |> create_block_graph(lg)
-      |> do_horizontal_compaction()
+      |> create_block_graph(lg, direction)
+      |> do_horizontal_compaction(direction)
 
-    root
-    |> Enum.map(fn {v, root} -> {v, Graph.vertex(bg, root, :x)} end)
-    |> Enum.reduce(lg, fn {v, x}, acc -> LevelGraph.put_label(acc, v, %{x: x}) end)
+    {root, assign_coordinates(root, bg, g)}
   end
 
-  defp do_horizontal_compaction(%Graph{} = g) do
+  @spec assign_coordinates(vertex_map, Graph.t(), Graph.t()) :: Graph.t()
+  defp assign_coordinates(root, bg, g) do
+    root
+    |> Enum.map(fn {v, root} -> {v, Graph.vertex(bg, root, :x)} end)
+    |> Enum.reduce(g, fn {v, x}, acc -> Graph.put_label(acc, v, x: x) end)
+  end
+
+  defp x_pos(x, :left), do: x
+  defp x_pos(x, :right), do: 0 - x
+
+  defp do_horizontal_compaction(%Graph{} = g, direction) do
     vs = Traversal.topsort(g)
 
     g
-    |> do_horizontal_compaction_right(vs)
-    |> do_horizontal_compaction_left(vs)
+    |> do_horizontal_compaction_right(vs, direction)
+    |> do_horizontal_compaction_left(vs, direction)
   end
 
-  defp do_horizontal_compaction_right(%Graph{} = g, vs) do
-    Enum.reduce(vs, g, &Graph.put_label(&2, &1, %{x: xr(&2, &1) + @delta}))
+  defp do_horizontal_compaction_right(%Graph{} = g, vs, dir) do
+    Enum.reduce(vs, g, &Graph.put_label(&2, &1, %{x: xr(&2, &1, dir) + delta(dir)}))
   end
 
-  defp do_horizontal_compaction_left(%Graph{} = g, vs) do
+  defp do_horizontal_compaction_left(%Graph{} = g, vs, dir) do
     vs
     |> Enum.reverse()
-    |> Enum.reduce(g, &Graph.put_label(&2, &1, %{x: xl(&2, &1) - @delta}))
+    |> Enum.reduce(g, &Graph.put_label(&2, &1, %{x: xl(&2, &1, dir) - delta(dir)}))
   end
 
-  defp xr(g, v) do
+  defp delta(:left), do: @delta
+  defp delta(:right), do: -@delta
+
+  defp xr(g, v, direction) do
     g
     |> Graph.in_neighbours(v)
     |> Enum.map(&Graph.vertex(g, &1, :x))
-    |> Enum.max(fn -> -1 end)
+    |> h_max(direction)
   end
 
-  defp xl(g, v) do
+  defp xl(g, v, dir) do
     case Graph.out_neighbours(g, v) do
       [] ->
-        Graph.vertex(g, v, :x) + 1
+        Graph.vertex(g, v, :x) + if dir == :left, do: 1, else: -1
 
       ws ->
         ws
         |> Enum.map(&Graph.vertex(g, &1, :x))
-        |> Enum.min()
+        |> h_min(dir)
     end
   end
 
-  defp create_block_graph(%{} = root, %LevelGraph{g: g} = lg) do
+  defp h_max(xs, :left), do: Enum.max(xs, fn -> -1 end)
+  defp h_max(xs, :right), do: Enum.min(xs, fn -> 1 end)
+  defp h_min(xs, :left), do: Enum.min(xs)
+  defp h_min(xs, :right), do: Enum.max(xs)
+
+  defp create_block_graph(%{} = root, %LevelGraph{g: g} = lg, direction) do
     root
     |> Enum.group_by(&elem(&1, 1), &elem(&1, 0))
     |> Map.keys()
-    |> Enum.reduce(Graph.new(), &Graph.add_vertex(&2, &1, Graph.vertex_label(g, &1)))
-    |> add_block_edges(root, lg)
+    |> Enum.reduce(
+      Graph.new([], acyclic: true),
+      &Graph.add_vertex(&2, &1, Graph.vertex_label(g, &1))
+    )
+    |> add_block_edges(root, lg, direction)
   end
 
-  defp add_block_edges(%Graph{} = g, %{} = root, %LevelGraph{} = lg) do
+  defp add_block_edges(%Graph{} = g, %{} = root, %LevelGraph{} = lg, direction) do
     lg
-    |> LevelGraph.predecessor_map()
+    |> LevelGraph.predecessor_map(direction)
+    |> Enum.sort()
     |> Enum.flat_map(fn {v1, v2} -> [v1, v2] end)
     |> Enum.map(&Map.get(root, &1))
     |> Enum.chunk_every(2, 2)
     |> Enum.uniq()
-    |> Enum.reduce(g, fn [v1, v2], acc -> Graph.add_edge(acc, v2, v1) end)
+    |> Enum.reduce(g, fn [v1, v2], acc ->
+      case Graph.add_edge(acc, v2, v1) do
+        {:error, e} ->
+          Logger.warn("Cyclic edge: #{inspect({v2, v1})} #{inspect(e)}")
+          acc
+
+        g ->
+          g
+      end
+    end)
   end
 end

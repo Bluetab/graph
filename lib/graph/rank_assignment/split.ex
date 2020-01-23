@@ -1,0 +1,75 @@
+defmodule Graph.RankAssignment.Split do
+  alias Graph.ClusterTree
+
+  require Logger
+
+  @spec split_clusters(Graph.t()) :: Graph.t()
+  def split_clusters(%Graph{} = g) do
+    g
+    |> ClusterTree.post_order_clusters()
+    |> Enum.reject(&(Graph.in_degree(g, &1) == 0))
+    |> Enum.filter(&is_multispan?(g, &1))
+    |> Enum.reduce(g, &split_cluster/2)
+  end
+
+  defp is_multispan?(%Graph{} = g, v) do
+    case Graph.vertex(g, v, :r) do
+      l when is_list(l) and length(l) > 1 -> true
+      _ -> false
+    end
+  end
+
+  defp split_cluster(w, %Graph{} = g) do
+    with %{} = groups <- chunk_children(g, w),
+         %Graph{} = acc <- Graph.del_vertex(g, w) do
+      Enum.reduce(groups, acc, add_cluster_span_vertex(g, w))
+    end
+  end
+
+  defp add_cluster_span_vertex(%Graph{} = g, w) do
+    with [parent] <- Graph.in_neighbours(g, w),
+         label <- Graph.vertex_label(g, w) do
+      fn {r, vs}, %Graph{} = g ->
+        Logger.debug("Splitting cluster #{inspect(w)} at span #{inspect(r)}")
+
+        g =
+          g
+          |> Graph.add_vertex({w, r}, Map.put(label, :r, r))
+          |> Graph.add_edge(parent, {w, r})
+
+        Enum.reduce(vs, g, &Graph.add_edge(&2, {w, r}, &1))
+      end
+    end
+  end
+
+  defp chunk_children(%Graph{} = t, w) do
+    case Graph.vertex(t, w, :r) do
+      rs when is_list(rs) ->
+        t
+        |> Graph.out_neighbours(w)
+        |> Enum.group_by(&containing_span(t, &1, rs))
+    end
+  end
+
+  defp containing_span(%Graph{} = t, v, spans) do
+    t
+    |> Graph.vertex(v, :r)
+    |> containing_span(spans)
+  end
+
+  defp containing_span(rank_or_span, spans) do
+    Enum.find(spans, &contains?(&1, rank_or_span))
+  end
+
+  defp contains?(min..max, [span]) do
+    contains?(min..max, span)
+  end
+
+  defp contains?(min..max, r1..r2) do
+    Enum.all?([r1, r2], &contains?(min..max, &1))
+  end
+
+  defp contains?(min..max, rank) do
+    Enum.member?(min..max, rank)
+  end
+end

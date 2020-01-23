@@ -23,7 +23,17 @@ defmodule Graph.LevelGraph do
   def new(g), do: %__MODULE__{g: g}
 
   @spec new(Graph.t(), level_fn) :: t
-  def new(g, phi), do: %__MODULE__{g: g, phi: phi}
+  def new(g, phi) when is_function(phi), do: %__MODULE__{g: g, phi: phi}
+
+  @spec new(Graph.t(), atom) :: t
+  def new(g, label) when is_atom(label) do
+    case phi(label) do
+      phi when is_function(phi) -> new(g, phi)
+    end
+  end
+
+  @spec phi(atom) :: level_fn
+  def phi(label) when is_atom(label), do: fn g, v -> Graph.vertex(g, v, label) end
 
   @spec subgraph(t, [level]) :: t
   def subgraph(%__MODULE__{g: g} = lg, levels) do
@@ -139,7 +149,7 @@ defmodule Graph.LevelGraph do
   @doc """
   Associates `labels` with a vertex of a level graph.
   """
-  @spec put_label(t, vertex, Vertex.label()) :: t
+  @spec put_label(t, vertex, Enumerable.t()) :: t
   def put_label(%__MODULE__{g: g} = lg, v, labels) do
     %{lg | g: Graph.put_label(g, v, labels)}
   end
