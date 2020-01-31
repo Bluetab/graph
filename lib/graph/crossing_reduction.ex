@@ -212,6 +212,7 @@ defmodule Graph.CrossingReduction do
   defp reduce_crossings(clg, root, direction \\ :down, prev_crossings \\ :infinity)
 
   defp reduce_crossings(%ClusteredLevelGraph{} = clg, _root, _dir, 0) do
+    Logger.info("Final cross count 0")
     %{clg | crossings: 0}
   end
 

@@ -27,6 +27,8 @@ defmodule Graph.Traversal do
   end
 
   @spec reaching(vertices, Graph.t()) :: vertices
+  def reaching([], %Graph{}), do: []
+
   def reaching(vs, %Graph{} = g) when is_list(vs) do
     g
     |> forest(&inn/3, vs, :first)
@@ -34,6 +36,8 @@ defmodule Graph.Traversal do
   end
 
   @spec reachable(vertices, Graph.t()) :: vertices
+  def reachable([], %Graph{}), do: []
+
   def reachable(vs, %Graph{} = g) when is_list(vs) do
     g
     |> forest(&out/3, vs, :first)

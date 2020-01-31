@@ -8,7 +8,6 @@ defmodule Graph.Drawing do
   defstruct groups: [],
             paths: [],
             resources: [],
-            routing: [],
             ids: [],
             excludes: [],
             opts: %{}
@@ -17,7 +16,6 @@ defmodule Graph.Drawing do
           groups: list,
           paths: list,
           resources: list,
-          routing: list,
           ids: list,
           excludes: list,
           opts: map

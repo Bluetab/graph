@@ -33,11 +33,12 @@ defmodule Graph.Drawing.GridTest do
              }
 
       assert y_scale == %{
-               2.0 => %{h: 26, bottom: 26, mid: 13, top: 0},
-               4.0 => %{h: 26, bottom: 62, mid: 49, top: 36},
-               6.0 => %{h: 22, bottom: 94, mid: 83, top: 72},
-               8.0 => %{h: 10, bottom: 114, mid: 109, top: 104},
-               10.0 => %{h: 10, bottom: 134, mid: 129, top: 124}
+               0.0 => %{h: 26, bottom: 26, mid: 13, top: 0},
+               2.0 => %{h: 26, bottom: 62, mid: 49, top: 36},
+               4.0 => %{h: 22, bottom: 94, mid: 83, top: 72},
+               6.0 => %{h: 22, bottom: 126, mid: 115, top: 104},
+               8.0 => %{h: 10, bottom: 146, mid: 141, top: 136},
+               10.0 => %{h: 10, bottom: 166, mid: 161, top: 156}
              }
     end
   end

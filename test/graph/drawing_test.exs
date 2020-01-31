@@ -28,9 +28,9 @@ defmodule Graph.DrawingTest do
 
       assert groups ==
                [
-                 %{id: :r, h: 134, w: 1060, x: 0, y: 0, z: 0},
-                 %{id: :a, h: 78, w: 460, x: 20, y: 36, z: 1},
-                 %{id: :b, h: 78, w: 460, x: 580, y: 36, z: 1}
+                 %{id: :r, w: 1060, x: 0, y: 0, z: 0, h: 166},
+                 %{id: :a, w: 460, x: 20, y: 36, z: 1, h: 90},
+                 %{id: :b, w: 460, x: 580, y: 36, z: 1, h: 110}
                ]
     end
 
@@ -43,9 +43,9 @@ defmodule Graph.DrawingTest do
       assert paths ==
                [
                  %{v1: :a1, v2: :a2, path: "M 240 83 L 260 83"},
-                 %{v1: :a2, v2: :b1, path: "M 460 83 L 480 83 L 580 83 L 600 83"},
-                 %{v1: :a2, v2: :b2, path: "M 820 83 L 700 109 L 580 109 L 480 109 L 460 83"},
-                 %{v1: :b1, v2: :b2, path: "M 800 83 L 820 83"}
+                 %{v1: :a2, v2: :b1, path: "M 460 83 L 480 115 L 580 115 L 600 115"},
+                 %{v1: :a2, v2: :b2, path: "M 820 83 L 700 83 L 580 83 L 480 83 L 460 83"},
+                 %{v1: :b1, v2: :b2, path: "M 800 115 L 820 83"}
                ]
     end
 
@@ -57,10 +57,10 @@ defmodule Graph.DrawingTest do
 
       assert resources ==
                [
-                 %{id: :a1, h: 22, w: 200, x: 40, y: 72},
-                 %{id: :a2, h: 22, w: 200, x: 260, y: 72},
-                 %{id: :b1, h: 22, w: 200, x: 600, y: 72},
-                 %{id: :b2, h: 22, w: 200, x: 820, y: 72}
+                 %{h: 22, id: :a1, w: 200, x: 40, y: 72},
+                 %{h: 22, id: :a2, w: 200, x: 260, y: 72},
+                 %{h: 22, id: :b1, w: 200, x: 600, y: 104},
+                 %{h: 22, id: :b2, w: 200, x: 820, y: 72}
                ]
     end
   end

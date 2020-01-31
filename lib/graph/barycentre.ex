@@ -18,7 +18,7 @@ defmodule Graph.Barycentre do
       case Graph.in_degree(g, v) do
         0 ->
           # Logger.debug("Vertex #{inspect(v)} has degree 0")
-          pos_fn.(g, v) / 1
+          pos_fn.(g, v)
 
         d when is_integer(d) ->
           b =
@@ -34,7 +34,7 @@ defmodule Graph.Barycentre do
 
   defp default_position_fn(%Graph{} = g, v) do
     case Graph.vertex(g, v, :b) do
-      nil -> 1
+      nil -> :random.uniform(50)
       b -> b
     end
   end
