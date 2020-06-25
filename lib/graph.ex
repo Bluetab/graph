@@ -477,8 +477,8 @@ defmodule Graph do
         g
 
       {v1, v2, _} ->
-        v1n = Map.get(out_edges, v1, MapSet.new()) |> MapSet.delete(id)
-        v2n = Map.get(in_edges, v2, MapSet.new()) |> MapSet.delete(id)
+        v1n = out_edges |> Map.get(v1, MapSet.new()) |> MapSet.delete(id)
+        v2n = in_edges |> Map.get(v2, MapSet.new()) |> MapSet.delete(id)
 
         g = %{
           g
@@ -538,8 +538,8 @@ defmodule Graph do
          %__MODULE__{edges: es, in_edges: ins, out_edges: outs} = g,
          {id, v1, v2, label}
        ) do
-    v1n = Map.get(outs, v1, MapSet.new()) |> MapSet.put(id)
-    v2n = Map.get(ins, v2, MapSet.new()) |> MapSet.put(id)
+    v1n = outs |> Map.get(v1, MapSet.new()) |> MapSet.put(id)
+    v2n = ins |> Map.get(v2, MapSet.new()) |> MapSet.put(id)
 
     %{
       g

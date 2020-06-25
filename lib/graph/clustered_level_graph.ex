@@ -26,7 +26,7 @@ defmodule Graph.ClusteredLevelGraph do
     with v1s <- Graph.vertices(g),
          v2s <- Graph.sink_vertices(t),
          [] <- diff(v1s, v2s),
-         Graph.is_arborescence(t) do
+         true <- Graph.is_arborescence(t) do
       %__MODULE__{g: lg, t: t}
     else
       [_ | _] = vs -> raise(ArgumentError, "vertices must match (#{inspect(vs)}")
@@ -285,14 +285,14 @@ defmodule Graph.ClusteredLevelGraph do
     %{clg | g: lg, t: t}
   end
 
-  defp validate(%{} = routing, l1, l2, first, last) do
+  # can be used for debugging routing...
+  def validate(%{} = routing, l1, l2, first, last) do
     case routing |> Map.keys() |> Enum.min_max() do
       {min, max} when min == l1 + 1 and max == l2 - 1 ->
         :ok
 
       {min, max} ->
         %{l1: l1, l2: l2, min: min, max: max, first: first, last: last, routing: routing}
-        |> IO.inspect(width: 160)
 
         raise("Invalid routing")
     end

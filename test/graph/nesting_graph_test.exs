@@ -144,7 +144,8 @@ defmodule Graph.NestingGraphTest do
       end)
 
       clg =
-        ClusteredLevelGraph.split_long_edges(ng)
+        ng
+        |> ClusteredLevelGraph.split_long_edges()
         |> ClusteredLevelGraph.insert_border_segments()
 
       assert ClusteredLevelGraph.is_proper?(clg), "Expected proper graph"
