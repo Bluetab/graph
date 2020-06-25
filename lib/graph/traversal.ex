@@ -145,13 +145,18 @@ defmodule Graph.Traversal do
         visited
 
       _ ->
-        nodes =
+        neighbours =
           vs
-          |> Enum.flat_map(fn node -> f.(g, node) ++ [node] end)
+          |> Enum.flat_map(&f.(g, &1))
           |> MapSet.new()
           |> MapSet.difference(visited)
 
-        do_traverse(g, nodes, f, MapSet.union(visited, nodes), n - 1)
+        visited =
+          visited
+          |> MapSet.union(vs)
+          |> MapSet.union(neighbours)
+
+        do_traverse(g, neighbours, f, visited, n - 1)
     end
   end
 
