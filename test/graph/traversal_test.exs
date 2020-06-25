@@ -53,9 +53,26 @@ defmodule Graph.TraversalTest do
       assert Traversal.reaching([:xyzzy], g) <~> [:foo, :bar, :xyzzy]
     end
 
-    @tag edges: [foo: :bar, bar: :baz, bar: :xyzzy, spqr: :foo]
-    test "reachable/2 returns reachable vertices", %{g: g} do
-      assert Traversal.reachable([:foo], g) <~> [:xyzzy, :baz, :bar, :foo]
+    @tag edges: [foo: :bar, bar: :baz, bar: :xyzzy]
+    test "reaching/3 returns reaching vertices", %{g: g} do
+      assert Traversal.reaching([:xyzzy], g, 2) <~> [:foo, :bar, :xyzzy]
+    end
+
+    @tag edges: [foo: :bar, bar: :baz, bar: :xyzzy]
+    test "reaching/3 returns reaching vertices under a given limit", %{g: g} do
+      assert Traversal.reaching([:xyzzy], g, 1) <~> [:bar, :xyzzy]
+      assert Traversal.reaching([:xyzzy], g, 0) == [:xyzzy]
+    end
+
+    @tag edges: [foo: :bar, bar: :baz, baz: :xyzzy]
+    test "reachable/3 returns reachable vertices", %{g: g} do
+      assert Traversal.reachable([:foo], g, 3) <~> [:foo, :bar, :baz, :xyzzy]
+    end
+
+    @tag edges: [foo: :bar, bar: :baz, baz: :xyzzy]
+    test "reachable/3 returns reachable vertices under a given limit", %{g: g} do
+      assert Traversal.reachable([:foo], g, 2) <~> [:foo, :bar, :baz]
+      assert Traversal.reachable([:foo], g, 0) == [:foo]
     end
 
     @tag edges: [foo: :bar, bar: :baz, bar: :xyzzy]

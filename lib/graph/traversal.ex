@@ -35,6 +35,15 @@ defmodule Graph.Traversal do
     |> Enum.concat()
   end
 
+  @spec reaching(vertices, Graph.t(), :pos_integer) :: vertices
+  def reaching([], %Graph{}, _limit), do: []
+
+  def reaching(vs, %Graph{} = g, limit) do
+    g
+    |> do_traverse(MapSet.new(vs), &Graph.in_neighbours/2, MapSet.new(), limit)
+    |> MapSet.to_list()
+  end
+
   @spec reachable(vertices, Graph.t()) :: vertices
   def reachable([], %Graph{}), do: []
 
@@ -42,6 +51,15 @@ defmodule Graph.Traversal do
     g
     |> forest(&out/3, vs, :first)
     |> Enum.concat()
+  end
+
+  @spec reachable(vertices, Graph.t(), :pos_integer) :: vertices
+  def reachable([], %Graph{}, _limit), do: []
+
+  def reachable(vs, %Graph{} = g, limit) do
+    g
+    |> do_traverse(MapSet.new(vs), &Graph.out_neighbours/2, MapSet.new(), limit)
+    |> MapSet.to_list()
   end
 
   @spec reaching_subgraph(Graph.t(), [Vertex.id()]) :: Graph.t()
@@ -119,7 +137,27 @@ defmodule Graph.Traversal do
     ll
   end
 
-  defp pretraverse(:first, v, sf, g, t, ll), do: ptraverse([v], sf, g, t, [], ll)
+  defp do_traverse(_g, vs, _f, visited, 0), do: MapSet.union(visited, vs)
+
+  defp do_traverse(%Graph{} = g, vs, f, visited, n) do
+    case MapSet.size(vs) do
+      0 ->
+        visited
+
+      _ ->
+        nodes =
+          vs
+          |> Enum.flat_map(fn node -> f.(g, node) ++ [node] end)
+          |> MapSet.new()
+          |> MapSet.difference(visited)
+
+        do_traverse(g, nodes, f, MapSet.union(visited, nodes), n - 1)
+    end
+  end
+
+  defp pretraverse(:first, v, sf, g, t, ll) do
+    ptraverse([v], sf, g, t, [], ll)
+  end
 
   defp pretraverse(:not_first, v, sf, g, t, ll) do
     case :ets.member(t, v) do
