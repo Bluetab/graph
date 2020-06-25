@@ -39,8 +39,13 @@ defmodule Graph.Traversal do
   def reaching([], %Graph{}, _limit), do: []
 
   def reaching(vs, %Graph{} = g, limit) do
+    vs =
+      vs
+      |> Enum.filter(&Graph.has_vertex?(g, &1))
+      |> MapSet.new()
+
     g
-    |> do_traverse(MapSet.new(vs), &Graph.in_neighbours/2, MapSet.new(), limit)
+    |> do_traverse(vs, &Graph.in_neighbours/2, vs, limit)
     |> MapSet.to_list()
   end
 
@@ -57,8 +62,13 @@ defmodule Graph.Traversal do
   def reachable([], %Graph{}, _limit), do: []
 
   def reachable(vs, %Graph{} = g, limit) do
+    vs =
+      vs
+      |> Enum.filter(&Graph.has_vertex?(g, &1))
+      |> MapSet.new()
+
     g
-    |> do_traverse(MapSet.new(vs), &Graph.out_neighbours/2, MapSet.new(), limit)
+    |> do_traverse(vs, &Graph.out_neighbours/2, vs, limit)
     |> MapSet.to_list()
   end
 
@@ -137,7 +147,7 @@ defmodule Graph.Traversal do
     ll
   end
 
-  defp do_traverse(_g, vs, _f, visited, 0), do: MapSet.union(visited, vs)
+  defp do_traverse(_g, _vs, _f, visited, n) when n <= 1, do: visited
 
   defp do_traverse(%Graph{} = g, vs, f, visited, n) do
     case MapSet.size(vs) do
@@ -151,12 +161,7 @@ defmodule Graph.Traversal do
           |> MapSet.new()
           |> MapSet.difference(visited)
 
-        visited =
-          visited
-          |> MapSet.union(vs)
-          |> MapSet.union(neighbours)
-
-        do_traverse(g, neighbours, f, visited, n - 1)
+        do_traverse(g, neighbours, f, MapSet.union(visited, neighbours), n - 1)
     end
   end
 
