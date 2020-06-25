@@ -15,6 +15,7 @@ defmodule Graph.ClusteredLevelGraph do
 
   @type t :: %__MODULE__{g: LevelGraph.t(), t: Graph.t()}
   @type span :: {pos_integer, pos_integer}
+  @typep vertex_id :: Vertex.id()
 
   @doc """
   Given a [k-level graph](`t:Graph.LevelGraph.t/0`) $(V, E, C, I, Phi)$ and a
@@ -23,17 +24,18 @@ defmodule Graph.ClusteredLevelGraph do
   """
   @spec new(LevelGraph.t(), Graph.t()) :: t
   def new(%LevelGraph{g: g} = lg, %Graph{} = t) do
-    with v1s <- Graph.vertices(g),
+    with {:tree, true} <- {:tree, Graph.is_arborescence(t)},
+         v1s <- Graph.vertices(g),
          v2s <- Graph.sink_vertices(t),
-         [] <- diff(v1s, v2s),
-         true <- Graph.is_arborescence(t) do
+         {:diff, []} <- {:diff, diff(v1s, v2s)} do
       %__MODULE__{g: lg, t: t}
     else
-      [_ | _] = vs -> raise(ArgumentError, "vertices must match (#{inspect(vs)}")
-      false -> raise(ArgumentError, "second argument must be an arborescence")
+      {:tree, false} -> {:error, "second argument must be an arborescence"}
+      {:diff, vs} -> {:error, "vertices must match (#{inspect(vs)}"}
     end
   end
 
+  @spec diff([vertex_id], [vertex_id]) :: [vertex_id]
   defp diff(v1s, v2s) do
     v1s = MapSet.new(v1s)
     v2s = MapSet.new(v2s)
