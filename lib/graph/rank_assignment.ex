@@ -1,6 +1,6 @@
 defmodule Graph.RankAssignment do
-  alias Graph.ClusterTree
   alias Graph.ClusteredLevelGraph
+  alias Graph.ClusterTree
   alias Graph.CrossingReduction
   alias Graph.LevelGraph
   alias Graph.RangeMap

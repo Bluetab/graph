@@ -21,7 +21,8 @@ defmodule Graph.CoordinateAssignment do
     conflicts = type1_conflicts(lg)
 
     bgs =
-      Enum.flat_map([:left, :right], fn horizontal_direction ->
+      [:left, :right]
+      |> Enum.flat_map(fn horizontal_direction ->
         Enum.map([:up, :down], fn vertical_direction ->
           lg
           |> vertical_alignment(conflicts, vertical_direction, horizontal_direction)
@@ -219,7 +220,8 @@ defmodule Graph.CoordinateAssignment do
         us ->
           mp = (Enum.count(us) - 1) / 2
 
-          floor(mp)
+          mp
+          |> floor()
           |> Range.new(ceil(mp))
           |> Enum.reduce(acc, vertical_alignment_reducer(v, us, pos_fn))
       end

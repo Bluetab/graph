@@ -1,4 +1,8 @@
 defmodule Graph.Drawing.Dimensions do
+  @moduledoc """
+  Module to calculate dimensions of nodes in a graph drawing.
+  """
+
   def height_fn(opts \\ []) do
     fn
       {:l, _, _} -> Keyword.get(opts, :header, 26)

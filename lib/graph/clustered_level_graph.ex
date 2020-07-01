@@ -15,6 +15,7 @@ defmodule Graph.ClusteredLevelGraph do
 
   @type t :: %__MODULE__{g: LevelGraph.t(), t: Graph.t()}
   @type span :: {pos_integer, pos_integer}
+  @typep vertex_id :: Vertex.id()
 
   @doc """
   Given a [k-level graph](`t:Graph.LevelGraph.t/0`) $(V, E, C, I, Phi)$ and a
@@ -23,17 +24,18 @@ defmodule Graph.ClusteredLevelGraph do
   """
   @spec new(LevelGraph.t(), Graph.t()) :: t
   def new(%LevelGraph{g: g} = lg, %Graph{} = t) do
-    with v1s <- Graph.vertices(g),
+    with {:tree, true} <- {:tree, Graph.is_arborescence(t)},
+         v1s <- Graph.vertices(g),
          v2s <- Graph.sink_vertices(t),
-         [] <- diff(v1s, v2s),
-         Graph.is_arborescence(t) do
+         {:diff, []} <- {:diff, diff(v1s, v2s)} do
       %__MODULE__{g: lg, t: t}
     else
-      [_ | _] = vs -> raise(ArgumentError, "vertices must match (#{inspect(vs)}")
-      false -> raise(ArgumentError, "second argument must be an arborescence")
+      {:tree, false} -> {:error, "second argument must be an arborescence"}
+      {:diff, vs} -> {:error, "vertices must match (#{inspect(vs)}"}
     end
   end
 
+  @spec diff([vertex_id], [vertex_id]) :: [vertex_id]
   defp diff(v1s, v2s) do
     v1s = MapSet.new(v1s)
     v2s = MapSet.new(v2s)
@@ -285,14 +287,14 @@ defmodule Graph.ClusteredLevelGraph do
     %{clg | g: lg, t: t}
   end
 
-  defp validate(%{} = routing, l1, l2, first, last) do
+  # can be used for debugging routing...
+  def validate(%{} = routing, l1, l2, first, last) do
     case routing |> Map.keys() |> Enum.min_max() do
       {min, max} when min == l1 + 1 and max == l2 - 1 ->
         :ok
 
       {min, max} ->
         %{l1: l1, l2: l2, min: min, max: max, first: first, last: last, routing: routing}
-        |> IO.inspect(width: 160)
 
         raise("Invalid routing")
     end

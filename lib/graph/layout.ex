@@ -1,10 +1,10 @@
 defmodule Graph.Layout do
-  alias Graph.RankAssignment
-  alias Graph.CrossingReduction
-  alias Graph.CoordinateAssignment
   alias Graph.ClusteredLevelGraph
   alias Graph.ClusterTree
+  alias Graph.CoordinateAssignment
+  alias Graph.CrossingReduction
   alias Graph.LevelGraph
+  alias Graph.RankAssignment
 
   defstruct graph: %ClusteredLevelGraph{}, ids: [], opts: []
 
