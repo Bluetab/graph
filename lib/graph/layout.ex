@@ -1,4 +1,8 @@
 defmodule Graph.Layout do
+  @moduledoc """
+  Layout support for Clustered Level Graphs.
+  """
+
   alias Graph.ClusteredLevelGraph
   alias Graph.ClusterTree
   alias Graph.CoordinateAssignment

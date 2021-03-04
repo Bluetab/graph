@@ -1,4 +1,9 @@
 defmodule Graph.RankAssignment.Split do
+  @moduledoc """
+  Support for splitting clusters that span multiple ranks but that don't have
+  children on each rank of the span.
+  """
+
   alias Graph.ClusterTree
 
   require Logger

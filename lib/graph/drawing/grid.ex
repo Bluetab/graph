@@ -1,4 +1,8 @@
 defmodule Graph.Drawing.Grid do
+  @moduledoc """
+  Support for creating grid-based graph drawings.
+  """
+
   alias Graph.Drawing.Dimensions
   alias Graph.Layout
   alias Graph.LevelGraph

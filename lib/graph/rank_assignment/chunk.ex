@@ -1,4 +1,6 @@
 defmodule Graph.RankAssignment.Chunk do
+  @moduledoc "Chunking support for Rank Assignment"
+
   def chunk([_ | _] = rs) do
     rs
     |> flatten()

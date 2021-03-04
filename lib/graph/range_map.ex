@@ -38,7 +38,7 @@ defmodule Graph.RangeMap do
     end
   end
 
-  @doc "Accumulates a singleton range"
+  # Accumulates a singleton range
   def put(%__MODULE__{} = range_map, k) when is_integer(k) do
     put(range_map, k..k)
   end

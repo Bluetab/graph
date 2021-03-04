@@ -1,4 +1,8 @@
 defmodule Graph.Drawing do
+  @moduledoc """
+  Support for creating drawings of clustered level graphs.
+  """
+
   alias Graph.ClusteredLevelGraph
   alias Graph.Drawing.Grid
   alias Graph.Layout

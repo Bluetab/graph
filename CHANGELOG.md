@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.0] 2021-03-04
+
+### Fixed
+
+- Maximum rank was being calculated incorrectly during rank assignment
+
+### Changed
+
+- Updated dependencies
+
 ## [1.0.0] 2020-07-01
 
 ### Added
@@ -11,4 +21,3 @@
 ### Changed
 
 - Assign random barycenter for nodes with degree 0
-

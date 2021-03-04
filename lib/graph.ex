@@ -160,7 +160,7 @@ defmodule Graph do
     Map.values(vertices)
   end
 
-  @spec vertices(t, Keyword.t()) :: [vertex_id]
+  @spec vertices(t, Keyword.t()) :: [vertex_id] | map()
   def vertices(%__MODULE__{vertices: vertices}, opts \\ []) do
     if opts[:labels], do: vertices, else: Map.keys(vertices)
   end
@@ -222,7 +222,12 @@ defmodule Graph do
   @spec add_edge(t, vertex_id, vertex_id, Enumerable.t()) :: t | {:error, any}
   def add_edge(%__MODULE__{} = g, v1, v2, label \\ %{}) do
     edge_id = random_edge_id(g)
-    do_add_edge(g, {edge_id, v1, v2, label})
+    add_edge(g, edge_id, v1, v2, label)
+  end
+
+  @spec add_edge(t, edge_id, vertex_id, vertex_id, Enumerable.t()) :: t | {:error, any}
+  def add_edge(%__MODULE__{} = g, id, v1, v2, label) do
+    do_add_edge(g, {id, v1, v2, label})
   end
 
   @spec has_edge?(t, vertex_id, vertex_id) :: boolean | {:error, {:bad_vertex, vertex_id}}
@@ -239,11 +244,6 @@ defmodule Graph do
     else
       true -> random_edge_id(g)
     end
-  end
-
-  @spec add_edge(t, edge_id, vertex_id, vertex_id, Enumerable.t()) :: t | {:error, any}
-  def add_edge(%__MODULE__{} = g, id, v1, v2, label) do
-    do_add_edge(g, {id, v1, v2, label})
   end
 
   @doc """

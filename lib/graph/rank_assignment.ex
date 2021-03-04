@@ -1,4 +1,8 @@
 defmodule Graph.RankAssignment do
+  @moduledoc """
+  Assigns a rank to the nodes of a clustered graph.
+  """
+
   alias Graph.ClusteredLevelGraph
   alias Graph.ClusterTree
   alias Graph.CrossingReduction
@@ -33,20 +37,29 @@ defmodule Graph.RankAssignment do
     g
     |> Traversal.topsort()
     |> Enum.reverse()
-    |> Enum.reduce(g, &Graph.put_label(&2, &1, r_max: max_rank(&2, &1)))
+    |> Enum.reduce(g, fn v, g -> Graph.put_label(g, v, r_max: max_rank(g, v)) end)
   end
 
   defp max_rank(%Graph{} = g, v) do
     g
     |> Graph.out_neighbours(v)
-    |> do_max_rank(g, v)
+    |> do_max_rank(g, v, maximum_rank(g))
   end
 
-  defp do_max_rank([], %Graph{} = g, v), do: Graph.vertex(g, v, :r_min)
-
-  defp do_max_rank(ws, %Graph{} = g, _v) do
-    ws
+  defp maximum_rank(%Graph{} = g) do
+    g
+    |> Graph.vertices()
     |> Enum.map(&Graph.vertex(g, &1, :r_min))
+    |> Enum.max()
+  end
+
+  defp do_max_rank([], %Graph{} = _g, _v, max_rank) do
+    max_rank
+  end
+
+  defp do_max_rank(ws, %Graph{} = g, _v, _max_rank) do
+    ws
+    |> Enum.map(&Graph.vertex(g, &1, :r_max))
     |> Enum.min()
     |> Kernel.-(1)
   end
