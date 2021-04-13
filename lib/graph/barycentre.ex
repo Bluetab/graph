@@ -34,7 +34,7 @@ defmodule Graph.Barycentre do
 
   defp default_position_fn(%Graph{} = g, v) do
     case Graph.vertex(g, v, :b) do
-      nil -> :random.uniform(50)
+      nil -> :rand.uniform(50)
       b -> b
     end
   end

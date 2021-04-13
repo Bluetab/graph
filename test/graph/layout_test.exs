@@ -151,7 +151,7 @@ defmodule Graph.LayoutTest do
     test "splitting clusters", %{g: g, t: t} do
       # [:web_statistics]
       ids = [:sql1, :dwh11]
-      assert %ClusteredLevelGraph{g: %{g: g} = lg} = clg = RankAssignment.assign_rank(g, t, ids)
+      assert %ClusteredLevelGraph{g: %{g: _g} = lg} = clg = RankAssignment.assign_rank(g, t, ids)
 
       assert LevelGraph.is_proper?(lg)
       assert ClusteredLevelGraph.is_proper?(clg)

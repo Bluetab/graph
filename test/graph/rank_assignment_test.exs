@@ -24,9 +24,9 @@ defmodule Graph.RankAssignmentTest do
     @tag tree: [root: [g1: [:a, :b, :d], g2: [:c, :e]]]
     @tag edges: [a: :b, a: :e, b: :c, c: :d, e: :d, d: :a]
     test "assigns cluster ranks greedily", %{g: g, t: t} do
-      assert %ClusteredLevelGraph{g: %{g: g} = lg, t: t} = RankAssignment.assign_rank(g, t, [:a])
+      assert %ClusteredLevelGraph{g: %{g: g} = _lg, t: t} = RankAssignment.assign_rank(g, t, [:a])
 
-      assert %{b: b, r: 7, r_max: 3, r_min: 2} = Graph.vertex_label(g, :e)
+      assert %{b: _b, r: 7, r_max: 3, r_min: 2} = Graph.vertex_label(g, :e)
 
       assert Graph.vertex(t, :root, :rs) <~> [3, 1, 2, 4]
       assert Graph.vertex(t, :g2, :rs) == [3]

@@ -10,7 +10,7 @@ defmodule Graph.Drawing.GridTest do
     @tag edges: [a1: :a2, a2: :b1, b1: :b2, b2: :a2]
     @tag tree: [root: [a: [:a1, :a2], b: [:b1, :b2]]]
     test "Grid.new/4 calculates x and y scales correctly", %{g: g, t: t} do
-      assert %Layout{graph: %{g: lg, t: t}} = Layout.layout(g, t, [:a1], type: :impact)
+      assert %Layout{graph: %{g: lg, t: _t}} = Layout.layout(g, t, [:a1], type: :impact)
 
       assert %Grid{x_scale: x_scale, y_scale: y_scale} =
                Grid.new(lg, Dimensions.width_fn(), Dimensions.height_fn(),
