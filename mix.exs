@@ -23,7 +23,7 @@ defmodule Graph.MixProject do
   def project do
     [
       app: :graph,
-      version: "1.1.0",
+      version: "1.2.0",
       elixir: "~> 1.8",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,

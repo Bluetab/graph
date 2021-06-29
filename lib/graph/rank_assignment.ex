@@ -71,7 +71,7 @@ defmodule Graph.RankAssignment do
          ws <- ClusterTree.post_order_clusters(t) do
       ws
       |> Enum.reduce(t, &Graph.put_label(&2, &1, rs: assign_cluster_spans(&2, &1)))
-      |> resolve_leaf_ranks(vs)
+      |> resolve_leaf_ranks(vs, g)
       |> resolve_cluster_ranks(ws)
       |> normalize(g)
     end
@@ -158,12 +158,13 @@ defmodule Graph.RankAssignment do
     end)
   end
 
-  defp resolve_leaf_ranks(%Graph{} = t, vs) do
+  defp resolve_leaf_ranks(%Graph{} = t, vs, %Graph{} = g) do
     vs
     |> Enum.group_by(&Graph.in_neighbours(t, &1))
     |> Enum.map(fn {[cluster], vs} -> {Graph.vertex(t, cluster, :rs), vs} end)
     |> Enum.flat_map(fn {rs, vs} -> Enum.map(vs, &{&1, resolve_rank(t, &1, rs)}) end)
     |> Enum.reduce(t, fn {v, r}, t -> Graph.put_label(t, v, r: r) end)
+    |> shift_leaf_ranks(g)
   end
 
   defp resolve_rank(%Graph{} = t, v, rs) do
@@ -172,7 +173,30 @@ defmodule Graph.RankAssignment do
       |> Graph.vertex(v, :rs)
       |> RangeMap.span()
 
-    Enum.find(rs, &Enum.member?(span, &1))
+    rs
+    |> Enum.filter(&Enum.member?(span, &1))
+    |> Enum.min()
+  end
+
+  defp shift_leaf_ranks(%Graph{} = t, %Graph{} = g) do
+    g
+    |> Traversal.topsort()
+    |> Enum.reduce(t, &shift_reducer(&2, &1, Graph.in_neighbours(g, &1)))
+  end
+
+  defp shift_reducer(%Graph{} = acc, _v, [] = _in_neighbours), do: acc
+
+  defp shift_reducer(%Graph{} = acc, v, [_ | _] = in_neighbours) do
+    r_min =
+      in_neighbours
+      |> Enum.map(&Graph.vertex(acc, &1, :r))
+      |> Enum.max()
+      |> Kernel.+(1)
+
+    case Graph.vertex(acc, v, :r) do
+      r when r < r_min -> Graph.put_label(acc, v, %{r: r_min})
+      _ -> acc
+    end
   end
 
   def assign_leaf_spans(%Graph{} = g, %Graph{} = t, vs) do

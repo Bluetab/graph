@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.0] 2021-06-29
+
+### Fixed
+
+- [TD-3867] Ensure rank assignment is consistent with topological ordering
+
 ## [1.1.0] 2021-03-04
 
 ### Fixed
