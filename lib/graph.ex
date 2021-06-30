@@ -221,7 +221,7 @@ defmodule Graph do
 
   @spec add_edge(t, vertex_id, vertex_id, Enumerable.t()) :: t | {:error, any}
   def add_edge(%__MODULE__{} = g, v1, v2, label \\ %{}) do
-    edge_id = random_edge_id(g)
+    edge_id = System.unique_integer([:positive])
     add_edge(g, edge_id, v1, v2, label)
   end
 
@@ -235,15 +235,6 @@ defmodule Graph do
     g
     |> out_neighbours(v1)
     |> Enum.member?(v2)
-  end
-
-  defp random_edge_id(%__MODULE__{edges: edges} = g) do
-    with id <- [:_e | :rand.uniform(1_000_000)],
-         false <- Map.has_key?(edges, id) do
-      id
-    else
-      true -> random_edge_id(g)
-    end
   end
 
   @doc """
