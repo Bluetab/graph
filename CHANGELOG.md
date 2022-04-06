@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unrelease]
+
+### Added
+
+- [TD-2026] Add metadata for edges
+
 ## [1.2.0] 2021-06-29
 
 ### Fixed
