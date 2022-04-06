@@ -167,8 +167,8 @@ defmodule Graph.ClusteredLevelGraph do
           t
           |> Graph.add_vertex({:l, c, rank})
           |> Graph.add_vertex({:r, c, rank})
-          |> Graph.add_edge(c, {:l, c, rank})
-          |> Graph.add_edge(c, {:r, c, rank})
+          |> Graph.add_edge(c, {:l, c, rank}, %{})
+          |> Graph.add_edge(c, {:r, c, rank}, %{})
 
         g =
           g
@@ -188,8 +188,8 @@ defmodule Graph.ClusteredLevelGraph do
 
         g =
           g
-          |> Graph.add_edge({:l, c, rank1}, {:l, c, rank2}, inner: inner)
-          |> Graph.add_edge({:r, c, rank1}, {:r, c, rank2}, inner: inner)
+          |> Graph.add_edge({:l, c, rank1}, {:l, c, rank2}, %{}, inner: inner)
+          |> Graph.add_edge({:r, c, rank1}, {:r, c, rank2}, %{}, inner: inner)
 
         lg = %{lg | g: g}
 
@@ -233,8 +233,8 @@ defmodule Graph.ClusteredLevelGraph do
     in_neighbours = Enum.flat_map(v2s, &Graph.in_neighbours(g, &1))
     out_neighbours = Enum.flat_map(v2s, &Graph.out_neighbours(g, &1))
     g = Graph.del_vertices(g, v2s)
-    g = Enum.reduce(in_neighbours, g, &Graph.add_edge(&2, &1, v2))
-    g = Enum.reduce(out_neighbours, g, &Graph.add_edge(&2, v2, &1))
+    g = Enum.reduce(in_neighbours, g, &Graph.add_edge(&2, &1, v2, %{}))
+    g = Enum.reduce(out_neighbours, g, &Graph.add_edge(&2, v2, &1, %{}))
     %{clg | g: %{lg | g: g}, t: Graph.del_vertices(t, v2s)}
   end
 
@@ -253,7 +253,7 @@ defmodule Graph.ClusteredLevelGraph do
   @spec split_long_edge(t, Edge.t(), Vertex.id()) :: t
   defp split_long_edge(
          %__MODULE__{g: %{g: g} = lg, t: t} = clg,
-         %Edge{id: edge_id, v1: v1, v2: v2, label: l} = e,
+         %Edge{id: edge_id, v1: v1, v2: v2, metadata: metadata, label: l} = e,
          root
        ) do
     routing = EdgeRouting.edge_routing(clg, e, root)
@@ -272,16 +272,16 @@ defmodule Graph.ClusteredLevelGraph do
         g =
           g
           |> Graph.add_vertex(w, r: r, dummy: true)
-          |> Graph.add_edge(w_prev, w, l)
+          |> Graph.add_edge(w_prev, w, metadata, l)
 
         t =
           t
           |> Graph.add_vertex(w)
-          |> Graph.add_edge(c, w)
+          |> Graph.add_edge(c, w, metadata)
 
         {g, t, w}
       end)
-      |> (fn {g, t, w_prev} -> {Graph.add_edge(g, w_prev, last, l), t} end).()
+      |> (fn {g, t, w_prev} -> {Graph.add_edge(g, w_prev, last, metadata, l), t} end).()
 
     lg = %{lg | g: g}
     %{clg | g: lg, t: t}

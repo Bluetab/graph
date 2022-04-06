@@ -341,7 +341,7 @@ defmodule Graph.CoordinateAssignment do
     |> Enum.chunk_every(2, 2)
     |> Enum.uniq()
     |> Enum.reduce(g, fn [v1, v2], acc ->
-      case Graph.add_edge(acc, v2, v1) do
+      case Graph.add_edge(acc, v2, v1, %{}) do
         {:error, e} ->
           Logger.warn("Cyclic edge: #{inspect({v2, v1})} #{inspect(e)}")
           acc

@@ -30,9 +30,9 @@ defmodule TreeCase do
       defp add_node(n, %Graph{} = g), do: Graph.add_vertex(g, n)
 
       defp add_edge(g, parent, {child, grandchildren}) when is_list(grandchildren),
-        do: Graph.add_edge(g, parent, child)
+        do: Graph.add_edge(g, parent, child, %{})
 
-      defp add_edge(g, parent, child), do: Graph.add_edge(g, parent, child)
+      defp add_edge(g, parent, child), do: Graph.add_edge(g, parent, child, %{})
     end
   end
 end

@@ -39,7 +39,7 @@ defmodule Graph.ConstraintGraph do
     g
     |> Graph.add_vertex(v1)
     |> Graph.add_vertex(v2)
-    |> Graph.add_edge(v1, v2)
+    |> Graph.add_edge(v1, v2, %{})
   end
 
   @doc """

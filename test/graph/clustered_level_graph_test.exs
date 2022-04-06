@@ -125,12 +125,12 @@ defmodule Graph.ClusteredLevelGraphTest do
 
       assert %{g: %{g: g}, t: t} = ClusteredLevelGraph.subgraph(clg, [1, 2])
       assert Graph.vertices(g) == [1, 2]
-      assert Graph.get_edges(g, fn {_, {v1, v2, _}} -> {v1, v2} end) == [{1, 2}]
+      assert Graph.get_edges(g, fn {_, {v1, v2, _, _}} -> {v1, v2} end) == [{1, 2}]
       assert Graph.vertices(t) == [1, 2, :a, :a1, :a2, :root]
 
       assert %{g: %{g: g}, t: t} = ClusteredLevelGraph.subgraph(clg, [2, 3])
       assert Graph.vertices(g) == [2, 3]
-      assert Graph.get_edges(g, fn {_, {v1, v2, _}} -> {v1, v2} end) == [{2, 3}]
+      assert Graph.get_edges(g, fn {_, {v1, v2, _, _}} -> {v1, v2} end) == [{2, 3}]
       assert Graph.vertices(t) == [2, 3, :a, :a2, :b, :b1, :root]
     end
   end

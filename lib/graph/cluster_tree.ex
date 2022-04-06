@@ -59,10 +59,10 @@ defmodule Graph.ClusterTree do
     g
     |> Graph.out_edges(v)
     |> Enum.map(&Graph.edge(g, &1))
-    |> Enum.reduce(g, fn %Edge{id: edge_id, v2: child, label: l}, g ->
+    |> Enum.reduce(g, fn %Edge{id: edge_id, v2: child, metadata: metadata, label: l}, g ->
       g
       |> Graph.del_edge(edge_id)
-      |> Graph.add_edge(parent, child, l)
+      |> Graph.add_edge(parent, child, metadata, l)
     end)
     |> Graph.del_vertex(v)
   end

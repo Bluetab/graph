@@ -25,7 +25,10 @@ defmodule Graph.LevelGraphTest do
       assert lg = LevelGraph.subgraph(lg, [1, 2, 3])
       assert %{g: g} = lg
       assert Graph.vertices(g) == [1, 2, 3]
-      assert [e1, e2] = g |> Graph.get_edges() |> Enum.sort_by(fn %{v1: v1, v2: v2} -> {v1, v2} end)
+
+      assert [e1, e2] =
+               g |> Graph.get_edges() |> Enum.sort_by(fn %{v1: v1, v2: v2} -> {v1, v2} end)
+
       assert %{v1: 1, v2: 2} = e1
       assert %{v1: 1, v2: 3} = e2
 

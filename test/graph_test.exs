@@ -24,9 +24,9 @@ defmodule GraphTest do
     end
 
     @tag edges: [foo: :bar, baz: :foo, bar: :xyzzy, baz: :spqr]
-    test "is_tree/1 returns true iff a graph is a tree", %{g: g} do
+    test "is_tree/1 returns true if a graph is a tree", %{g: g} do
       assert Graph.is_tree(g)
-      refute Graph.is_tree(Graph.add_edge(g, :spqr, :xyzzy))
+      refute Graph.is_tree(Graph.add_edge(g, :spqr, :xyzzy, %{}))
     end
 
     @tag edges: [foo: :bar, foo: :baz, bar: :xyzzy, baz: :spqr]
@@ -81,10 +81,10 @@ defmodule GraphTest do
   end
 
   describe "An acyclic graph" do
-    test "add_edge/3 fails if it would create a cycle in an acyclic graph" do
+    test "add_edge/4 fails if it would create a cycle in an acyclic graph" do
       g = Graph.new([:foo, :bar], acyclic: true)
-      assert g = Graph.add_edge(g, :foo, :bar)
-      assert Graph.add_edge(g, :bar, :foo) == {:error, {:bad_edge, [:foo, :bar]}}
+      assert g = Graph.add_edge(g, :foo, :bar, %{})
+      assert Graph.add_edge(g, :bar, :foo, %{}) == {:error, {:bad_edge, [:foo, :bar]}}
     end
   end
 end

@@ -40,9 +40,9 @@ defmodule Graph.RankAssignment.Split do
         g =
           g
           |> Graph.add_vertex({w, r}, Map.put(label, :r, r))
-          |> Graph.add_edge(parent, {w, r})
+          |> Graph.add_edge(parent, {w, r}, %{})
 
-        Enum.reduce(vs, g, &Graph.add_edge(&2, {w, r}, &1))
+        Enum.reduce(vs, g, &Graph.add_edge(&2, {w, r}, &1, %{}))
       end
     end
   end

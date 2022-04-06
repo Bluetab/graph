@@ -76,9 +76,9 @@ defmodule Graph.Drawing do
     path_fn = polyline_fn(g, grid, type)
 
     g
-    |> Graph.get_edges(fn {_, {v1, v2, label}} -> {v1, v2, label} end)
-    |> Enum.reject(fn {v1, v2, _} -> is_border?(v1) or is_border?(v2) end)
-    |> Enum.group_by(&endpoints/1, fn {v1, v2, _} -> [v1, v2] end)
+    |> Graph.get_edges(fn {_, {v1, v2, metadata, label}} -> {v1, v2, metadata, label} end)
+    |> Enum.reject(fn {v1, v2, _, _} -> is_border?(v1) or is_border?(v2) end)
+    |> Enum.group_by(&endpoints/1, fn {v1, v2, _, _} -> [v1, v2] end)
     |> Enum.map(path_fn)
   end
 
@@ -110,13 +110,15 @@ defmodule Graph.Drawing do
     |> Enum.sort_by(fn %{x: x, y: y, z: z} -> {z, x, y} end)
   end
 
-  defp endpoints({{v1, v2, _}, {v1, v2, _}, %{} = l}), do: {v1, v2, l[:inverted]}
-  defp endpoints({{v1, v2, _}, v2, %{} = l}), do: {v1, v2, l[:inverted]}
-  defp endpoints({v1, {v1, v2, _}, %{} = l}), do: {v1, v2, l[:inverted]}
-  defp endpoints({v1, v2, %{} = l}), do: {v1, v2, l[:inverted]}
+  defp endpoints({{v1, v2, _}, {v1, v2, _}, metadata, %{} = l}),
+    do: {v1, v2, metadata, l[:inverted]}
+
+  defp endpoints({{v1, v2, _}, v2, metadata, %{} = l}), do: {v1, v2, metadata, l[:inverted]}
+  defp endpoints({v1, {v1, v2, _}, metadata, %{} = l}), do: {v1, v2, metadata, l[:inverted]}
+  defp endpoints({v1, v2, metadata, %{} = l}), do: {v1, v2, metadata, l[:inverted]}
 
   defp polyline_fn(%Graph{} = g, %Grid{} = grid, type) do
-    fn {{v1, v2, inverted}, vs} ->
+    fn {{v1, v2, metadata, inverted}, vs} ->
       path =
         vs
         |> Enum.flat_map(& &1)
@@ -129,7 +131,7 @@ defmodule Graph.Drawing do
         |> Enum.reverse()
         |> Enum.join(" ")
 
-      %{v1: v1, v2: v2, path: path}
+      %{v1: v1, v2: v2, path: path, metadata: metadata}
     end
   end
 

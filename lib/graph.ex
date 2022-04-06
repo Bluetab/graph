@@ -186,16 +186,16 @@ defmodule Graph do
       iex> g = Graph.new([:foo, :bar, :baz])
       iex> Graph.edge(g, :e1)
       nil
-      iex> g = Graph.add_edge(g, :e1, :foo, :bar, w: 0)
+      iex> g = Graph.add_edge(g, :e1, :foo, :bar, %{"bar" => "baz"},  w: 0)
       iex> Graph.edge(g, :e1)
-      %Edge{id: :e1, v1: :foo, v2: :bar, label: %{w: 0}}
+      %Edge{id: :e1, v1: :foo, v2: :bar, metadata: %{"bar" => "baz"}, label: %{w: 0}}
 
   """
   @spec edge(t, edge_id) :: Edge.t() | nil
   def edge(%__MODULE__{edges: edges}, id) do
     case Map.get(edges, id) do
       nil -> nil
-      {v1, v2, label} -> %Edge{id: id, v1: v1, v2: v2, label: label}
+      {v1, v2, metadata, label} -> %Edge{id: id, v1: v1, v2: v2, metadata: metadata, label: label}
     end
   end
 
@@ -205,7 +205,7 @@ defmodule Graph do
     ## Examples
 
       iex> g = Graph.new([:foo, :bar, :baz])
-      iex> g = Graph.add_edge(g, :e1, :foo, :bar, %{})
+      iex> g = Graph.add_edge(g, :e1, :foo, :bar, %{}, %{})
       iex> Graph.edges(g)
       [:e1]
 
@@ -219,15 +219,16 @@ defmodule Graph do
     Enum.map(edges, transform)
   end
 
-  @spec add_edge(t, vertex_id, vertex_id, Enumerable.t()) :: t | {:error, any}
-  def add_edge(%__MODULE__{} = g, v1, v2, label \\ %{}) do
+  @spec add_edge(t, vertex_id, vertex_id, map, Enumerable.t()) :: t | {:error, any}
+  def add_edge(%__MODULE__{} = g, v1, v2, metadata, label \\ %{}) do
     edge_id = System.unique_integer([:positive])
-    add_edge(g, edge_id, v1, v2, label)
+    add_edge(g, edge_id, v1, v2, metadata, label)
   end
 
-  @spec add_edge(t, edge_id, vertex_id, vertex_id, Enumerable.t()) :: t | {:error, any}
-  def add_edge(%__MODULE__{} = g, id, v1, v2, label) do
-    do_add_edge(g, {id, v1, v2, label})
+  @spec add_edge(t, edge_id, vertex_id, vertex_id, map, Enumerable.t()) ::
+          t | {:error, any}
+  def add_edge(%__MODULE__{} = g, id, v1, v2, metadata, label) do
+    do_add_edge(g, {id, v1, v2, metadata, label})
   end
 
   @spec has_edge?(t, vertex_id, vertex_id) :: boolean | {:error, {:bad_vertex, vertex_id}}
@@ -258,7 +259,9 @@ defmodule Graph do
   end
 
   def add_edges(%__MODULE__{} = g, edges) when is_list(edges) do
-    Enum.reduce(edges, g, fn {v1, v2}, g -> add_edge(g, v1, v2) end)
+    Enum.reduce(edges, g, fn {v1, v2}, g ->
+      add_edge(g, v1, v2, %{})
+    end)
   end
 
   @spec del_edge(t, edge_id) :: t
@@ -275,9 +278,9 @@ defmodule Graph do
     ## Examples
 
       iex> g = Graph.new([:foo, :bar, :baz])
-      iex> g = Graph.add_edge(g, :foo, :bar)
-      iex> g = Graph.add_edge(g, :bar, :baz)
-      iex> g = Graph.add_edge(g, :e3, :foo, :bar, %{})
+      iex> g = Graph.add_edge(g, :foo, :bar, %{})
+      iex> g = Graph.add_edge(g, :bar, :baz, %{})
+      iex> g = Graph.add_edge(g, :e3, :foo, :bar, %{}, %{})
       iex> Graph.no_edges(g)
       3
 
@@ -293,8 +296,8 @@ defmodule Graph do
     ## Examples
 
       iex> g = Graph.new([:foo, :bar, :baz])
-      iex> g = Graph.add_edge(g, :foo, :bar)
-      iex> g = Graph.add_edge(g, :bar, :baz)
+      iex> g = Graph.add_edge(g, :foo, :bar, %{})
+      iex> g = Graph.add_edge(g, :bar, :baz, %{})
       iex> Graph.in_vertices(g)
       [:bar, :baz]
 
@@ -383,6 +386,20 @@ defmodule Graph do
     end
   end
 
+  def out_neighbours_with_metadata(%__MODULE__{vertices: vertices, out_edges: out_edges} = g, v) do
+    if Map.has_key?(vertices, v) do
+      out_edges
+      |> Map.get(v, [])
+      |> Enum.map(&edge(g, &1))
+      |> Enum.map(fn
+        %Edge{v2: v2, metadata: metadata} when metadata == %{} -> v2
+        %Edge{v2: v2, metadata: metadata} -> [v2, metadata]
+      end)
+    else
+      {:error, {:bad_vertex, v}}
+    end
+  end
+
   @spec in_edges(t, vertex_id) :: [edge_id] | {:error, :bad_vertex}
   def in_edges(%__MODULE__{vertices: vertices, in_edges: in_edges}, v) do
     if Map.has_key?(vertices, v) do
@@ -432,15 +449,19 @@ defmodule Graph do
 
     edges
     |> Map.take(edge_ids)
-    |> Enum.filter(fn {_, {v1, v2, _}} -> MapSet.member?(vm, v1) and MapSet.member?(vm, v2) end)
+    |> Enum.filter(fn {_, {v1, v2, _, _}} ->
+      MapSet.member?(vm, v1) and MapSet.member?(vm, v2)
+    end)
     |> reverse_edges(opts[:reverse])
-    |> Enum.reduce(new(Map.take(vertices, vs)), fn {edge_id, {v1, v2, label}}, sg ->
-      add_edge(sg, edge_id, v1, v2, label)
+    |> Enum.reduce(new(Map.take(vertices, vs)), fn {edge_id, {v1, v2, metadata, label}}, sg ->
+      add_edge(sg, edge_id, v1, v2, metadata, label)
     end)
   end
 
   defp reverse_edges(edges, true) do
-    Enum.map(edges, fn {edge_id, {v1, v2, label}} -> {edge_id, {v2, v1, label}} end)
+    Enum.map(edges, fn {edge_id, {v1, v2, metadata, label}} ->
+      {edge_id, {v2, v1, metadata, label}}
+    end)
   end
 
   defp reverse_edges(edges, _false), do: edges
@@ -450,9 +471,9 @@ defmodule Graph do
     vs = Map.delete(vs, v)
 
     edges
-    |> Enum.reject(fn {_, {v1, v2, _}} -> v1 == v or v2 == v end)
-    |> Enum.reduce(new(vs), fn {edge_id, {v1, v2, label}}, sg ->
-      add_edge(sg, edge_id, v1, v2, label)
+    |> Enum.reject(fn {_, {v1, v2, _, _}} -> v1 == v or v2 == v end)
+    |> Enum.reduce(new(vs), fn {edge_id, {v1, v2, metadata, label}}, sg ->
+      add_edge(sg, edge_id, v1, v2, metadata, label)
     end)
   end
 
@@ -467,7 +488,7 @@ defmodule Graph do
       nil ->
         g
 
-      {v1, v2, _} ->
+      {v1, v2, _, _} ->
         v1n = out_edges |> Map.get(v1, MapSet.new()) |> MapSet.delete(id)
         v2n = in_edges |> Map.get(v2, MapSet.new()) |> MapSet.delete(id)
 
@@ -494,20 +515,21 @@ defmodule Graph do
 
   defp do_del_edges(%__MODULE__{} = g, []), do: g
 
-  @spec do_add_edge(t, {edge_id, vertex_id, vertex_id, Keyword.t()}) :: t | {:error, any}
-  defp do_add_edge(%__MODULE__{} = g, {id, v1, v2, label}) when is_list(label) do
-    do_add_edge(g, {id, v1, v2, Map.new(label)})
+  @spec do_add_edge(t, {edge_id, vertex_id, vertex_id, map, Keyword.t()}) ::
+          t | {:error, any}
+  defp do_add_edge(%__MODULE__{} = g, {id, v1, v2, metadata, label}) when is_list(label) do
+    do_add_edge(g, {id, v1, v2, metadata, Map.new(label)})
   end
 
-  @spec do_add_edge(t, {edge_id, vertex_id, vertex_id, map}) :: t | {:error, any}
-  defp do_add_edge(%__MODULE__{vertices: vs, opts: opts} = g, {id, v1, v2, label}) do
+  @spec do_add_edge(t, {edge_id, vertex_id, vertex_id, map, map}) :: t | {:error, any}
+  defp do_add_edge(%__MODULE__{vertices: vs, opts: opts} = g, {id, v1, v2, metadata, label}) do
     with true <- Map.has_key?(vs, v1),
          true <- Map.has_key?(vs, v2),
          false <- other_edge_exists?(g, id, v1, v2) do
       if opts[:acyclic] do
-        acyclic_add_edge(g, {id, v1, v2, label})
+        acyclic_add_edge(g, {id, v1, v2, metadata, label})
       else
-        do_insert_edge(g, {id, v1, v2, label})
+        do_insert_edge(g, {id, v1, v2, metadata, label})
       end
     else
       false -> {:error, :bad_vertex}
@@ -524,17 +546,17 @@ defmodule Graph do
     end
   end
 
-  @spec do_insert_edge(t, {edge_id, vertex_id, vertex_id, map}) :: t
+  @spec do_insert_edge(t, {edge_id, vertex_id, vertex_id, map, map}) :: t
   defp do_insert_edge(
          %__MODULE__{edges: es, in_edges: ins, out_edges: outs} = g,
-         {id, v1, v2, label}
+         {id, v1, v2, metadata, label}
        ) do
     v1n = outs |> Map.get(v1, MapSet.new()) |> MapSet.put(id)
     v2n = ins |> Map.get(v2, MapSet.new()) |> MapSet.put(id)
 
     %{
       g
-      | edges: Map.put(es, id, {v1, v2, label}),
+      | edges: Map.put(es, id, {v1, v2, metadata, label}),
         in_edges: Map.put(ins, v2, v2n),
         out_edges: Map.put(outs, v1, v1n)
     }
@@ -577,7 +599,7 @@ defmodule Graph do
     edge_ids =
       edges
       |> Map.take(out_edges(g, v1))
-      |> Enum.filter(fn {_, {_, w, _}} -> w == v2 end)
+      |> Enum.filter(fn {_, {_, w, _, _}} -> w == v2 end)
       |> Enum.map(fn {e, _} -> e end)
 
     g
@@ -619,16 +641,16 @@ defmodule Graph do
 
   defp one_path([], _, [], _, _, _, _, _counter), do: false
 
-  @spec acyclic_add_edge(t, {edge_id, vertex_id, vertex_id, map}) ::
+  @spec acyclic_add_edge(t, {edge_id, vertex_id, vertex_id, map, map}) ::
           t | {:error, {:bad_edge, [vertex_id]}}
   defp acyclic_add_edge(g, edge_attrs)
 
-  defp acyclic_add_edge(%__MODULE__{}, {_e, v1, v2, _label}) when v1 == v2,
+  defp acyclic_add_edge(%__MODULE__{}, {_e, v1, v2, _metadata, _label}) when v1 == v2,
     do: {:error, {:bad_edge, [v1, v2]}}
 
-  defp acyclic_add_edge(%__MODULE__{} = g, {e, v1, v2, label}) do
+  defp acyclic_add_edge(%__MODULE__{} = g, {e, v1, v2, metadata, label}) do
     case get_path(g, v2, v1) do
-      false -> do_insert_edge(g, {e, v1, v2, label})
+      false -> do_insert_edge(g, {e, v1, v2, metadata, label})
       path -> {:error, {:bad_edge, path}}
     end
   end
@@ -650,7 +672,7 @@ defmodule Graph do
   defp spath(q, %__MODULE__{edges: edges} = g, sink, %__MODULE__{vertices: vs} = t) do
     case :queue.out(q) do
       {{:value, e}, q1} ->
-        {v1, v2, _label} = Map.get(edges, e)
+        {v1, v2, metadata, _label} = Map.get(edges, e)
 
         if sink == v2 do
           follow_path(v1, t, [v2])
@@ -660,7 +682,7 @@ defmodule Graph do
               t =
                 t
                 |> add_vertex(v2)
-                |> add_edge(v2, v1)
+                |> add_edge(v2, v1, metadata)
 
               v2
               |> queue_out_neighbours(g, q1)

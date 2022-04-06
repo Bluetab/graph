@@ -14,8 +14,11 @@ defmodule GraphCase do
       setup tags do
         g =
           case tags[:vertices] do
-            nil -> Graph.new()
-            vs -> Graph.new(vs)
+            nil ->
+              Graph.new()
+
+            vs ->
+              Graph.new(vs)
           end
 
         g =
@@ -28,7 +31,21 @@ defmodule GraphCase do
                 g
                 |> Graph.add_vertex(v1)
                 |> Graph.add_vertex(v2)
-                |> Graph.add_edge(v1, v2)
+                |> Graph.add_edge(v1, v2, %{})
+              end)
+          end
+
+        g =
+          case tags[:edges_metadata] do
+            nil ->
+              g
+
+            edges ->
+              Enum.reduce(edges, g, fn [metadata, {v1, v2}], g ->
+                g
+                |> Graph.add_vertex(v1)
+                |> Graph.add_vertex(v2)
+                |> Graph.add_edge(v1, v2, metadata)
               end)
           end
 
@@ -45,7 +62,7 @@ defmodule GraphCase do
 
       defp edges(%Graph{} = g) do
         g
-        |> Graph.get_edges(fn {_, {v1, v2, _}} -> {v1, v2} end)
+        |> Graph.get_edges(fn {_, {v1, v2, _, _}} -> {v1, v2} end)
         |> Enum.sort()
       end
 

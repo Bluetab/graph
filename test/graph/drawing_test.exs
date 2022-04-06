@@ -42,10 +42,45 @@ defmodule Graph.DrawingTest do
 
       assert paths ==
                [
-                 %{v1: :a1, v2: :a2, path: "M 240 83 L 260 83"},
-                 %{v1: :a2, v2: :b1, path: "M 460 83 L 480 83 L 580 83 L 600 83"},
-                 %{v1: :a2, v2: :b2, path: "M 820 83 L 700 109 L 580 109 L 480 109 L 460 83"},
-                 %{v1: :b1, v2: :b2, path: "M 800 83 L 820 83"}
+                 %{v1: :a1, v2: :a2, path: "M 240 83 L 260 83", metadata: %{}},
+                 %{v1: :a2, v2: :b1, path: "M 460 83 L 480 83 L 580 83 L 600 83", metadata: %{}},
+                 %{
+                   v1: :a2,
+                   v2: :b2,
+                   path: "M 820 83 L 700 109 L 580 109 L 480 109 L 460 83",
+                   metadata: %{}
+                 },
+                 %{v1: :b1, v2: :b2, path: "M 800 83 L 820 83", metadata: %{}}
+               ]
+    end
+
+    @tag edges_metadata: [
+           [%{"bar" => "baz"}, a1: :a2],
+           [%{"boo" => "yxz"}, a2: :b1],
+           [%{"zoo" => "foo"}, b1: :b2],
+           [%{"naa" => "yaa"}, b2: :a2]
+         ]
+    @tag tree: [root: [a: [:a1, :a2], b: [:b1, :b2]]]
+    test "Drawing.new/4 calculates paths with metadata", %{layout: layout} do
+      assert %Drawing{} = d = Drawing.new(layout, &label_fn/1)
+      assert %{paths: paths} = d
+
+      assert paths ==
+               [
+                 %{v1: :a1, v2: :a2, path: "M 240 83 L 260 83", metadata: %{"bar" => "baz"}},
+                 %{
+                   v1: :a2,
+                   v2: :b1,
+                   path: "M 460 83 L 480 83 L 580 83 L 600 83",
+                   metadata: %{"boo" => "yxz"}
+                 },
+                 %{
+                   v1: :a2,
+                   v2: :b2,
+                   path: "M 820 83 L 700 109 L 580 109 L 480 109 L 460 83",
+                   metadata: %{"naa" => "yaa"}
+                 },
+                 %{v1: :b1, v2: :b2, path: "M 800 83 L 820 83", metadata: %{"zoo" => "foo"}}
                ]
     end
 

@@ -134,8 +134,8 @@ defmodule Graph.RankAssignment do
         t
         |> Graph.add_vertex({w, :-})
         |> Graph.add_vertex({w, :+})
-        |> Graph.add_edge(w, {w, :-})
-        |> Graph.add_edge(w, {w, :+})
+        |> Graph.add_edge(w, {w, :-}, %{})
+        |> Graph.add_edge(w, {w, :+}, %{})
 
       g =
         g
@@ -246,14 +246,59 @@ defmodule Graph.RankAssignment do
 
   @spec assign_next_rank({Graph.t(), [edge_spec]}, Graph.t(), rank) :: Graph.t()
   defp assign_next_rank({%Graph{} = acc, acyclic_edges}, %Graph{} = g, r) do
-    next_ids = Enum.map(acyclic_edges, fn {_v1, v2} -> v2 end)
+    next_ids =
+      Enum.map(acyclic_edges, fn
+        {_v1, [v2, _]} -> v2
+        {_v1, v2} -> v2
+      end)
+
     assign_min_rank(acc, g, next_ids, r)
   end
 
   @spec insert_edge_acyclic(edge_spec, {Graph.t(), MapSet.t()}) :: {Graph.t(), MapSet.t()}
-  defp insert_edge_acyclic({v1, v2}, {%Graph{} = g, acyclic_edges} = acc, inverted \\ false) do
+  defp insert_edge_acyclic(edges_spec, graph, inverted \\ false)
+
+  defp insert_edge_acyclic(
+         {v1, [v2, metadata] = v2_metadata},
+         {%Graph{} = g, acyclic_edges} = acc,
+         inverted
+       ) do
     with false <- Graph.has_edge?(g, v1, v2),
-         %Graph{} = g <- do_insert_edge(g, v1, v2, inverted) do
+         %Graph{} = g <- do_insert_edge(g, v1, v2, metadata, inverted) do
+      {g, acyclic_edges}
+    else
+      true ->
+        acc
+
+      {:error, _} ->
+        insert_edge_acyclic(
+          {v2_metadata, v1},
+          {g, MapSet.delete(acyclic_edges, {v1, v2_metadata})},
+          true
+        )
+    end
+  end
+
+  defp insert_edge_acyclic(
+         {[v1, metadata] = v1_metadata, v2},
+         {%Graph{} = g, acyclic_edges} = acc,
+         inverted
+       ) do
+    with false <- Graph.has_edge?(g, v1, v2),
+         %Graph{} = g <- do_insert_edge(g, v1, v2, metadata, inverted) do
+      {g, acyclic_edges}
+    else
+      true ->
+        acc
+
+      {:error, _} ->
+        insert_edge_acyclic({v2, v1}, {g, MapSet.delete(acyclic_edges, {v1_metadata, v2})}, true)
+    end
+  end
+
+  defp insert_edge_acyclic({v1, v2}, {%Graph{} = g, acyclic_edges} = acc, inverted) do
+    with false <- Graph.has_edge?(g, v1, v2),
+         %Graph{} = g <- do_insert_edge(g, v1, v2, %{}, inverted) do
       {g, acyclic_edges}
     else
       true ->
@@ -264,19 +309,26 @@ defmodule Graph.RankAssignment do
     end
   end
 
-  defp do_insert_edge(%Graph{} = g, v1, v2, true) do
-    Graph.add_edge(g, v1, v2, inverted: true)
+  defp do_insert_edge(%Graph{} = g, v1, v2, metadata, true) do
+    Graph.add_edge(g, v1, v2, metadata, inverted: true)
   end
 
-  defp do_insert_edge(%Graph{} = g, v1, v2, false), do: Graph.add_edge(g, v1, v2)
+  defp do_insert_edge(%Graph{} = g, v1, v2, metadata, false) do
+    Graph.add_edge(g, v1, v2, metadata)
+  end
 
   @spec edge_set(Graph.t(), [Vertex.id()]) :: MapSet.t()
   defp edge_set(%Graph{} = g, ids) do
     ids
-    |> Enum.map(&Graph.out_neighbours(g, &1))
+    |> Enum.map(&Graph.out_neighbours_with_metadata(g, &1))
     |> Enum.zip(ids)
-    |> Enum.flat_map(fn {v2s, v1} -> Enum.map(v2s, &{v1, &1}) end)
-    |> Enum.reject(fn {v1, v2} -> v1 == v2 end)
+    |> Enum.flat_map(fn {v2s, v1} ->
+      Enum.map(v2s, &{v1, &1})
+    end)
+    |> Enum.reject(fn
+      {v1, [v2, _]} -> v1 == v2
+      {v1, v2} -> v1 == v2
+    end)
     |> MapSet.new()
   end
 end

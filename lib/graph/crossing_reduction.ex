@@ -128,7 +128,7 @@ defmodule Graph.CrossingReduction do
   defp crossing_reduction_graph(t2, c, v1s, edges, constraints) do
     edges
     |> Enum.reduce(cluster_subgraph(t2, c, v1s), fn {v1, v2}, acc ->
-      Graph.add_edge(acc, v1, v2)
+      Graph.add_edge(acc, v1, v2, %{})
     end)
     |> LevelGraph.new(fn g, v -> Graph.vertex(g, v, :r) end)
     |> CrossingReductionGraph.new(constraints)
@@ -159,8 +159,8 @@ defmodule Graph.CrossingReduction do
   end
 
   @spec edge_fn(direction) :: ({any, {vertex, vertex, any}} -> edge)
-  defp edge_fn(:down), do: fn {_, {w1, w2, _}} -> {w1, w2} end
-  defp edge_fn(:up), do: fn {_, {w1, w2, _}} -> {w2, w1} end
+  defp edge_fn(:down), do: fn {_, {w1, w2, _, _}} -> {w1, w2} end
+  defp edge_fn(:up), do: fn {_, {w1, w2, _, _}} -> {w2, w1} end
 
   defp cluster_subgraph(%Graph{} = t2, c, v1s) do
     t2

@@ -36,8 +36,8 @@ defmodule Graph.NestingGraph do
         acc
         |> Graph.add_vertex({v, :-})
         |> Graph.add_vertex({v, :+})
-        |> Graph.add_edge(v, {v, :-})
-        |> Graph.add_edge(v, {v, :+})
+        |> Graph.add_edge(v, {v, :-}, %{})
+        |> Graph.add_edge(v, {v, :+}, %{})
       end)
 
     %__MODULE__{g: ng, t: t, cycles: cycles}
@@ -52,15 +52,15 @@ defmodule Graph.NestingGraph do
   defp add_nesting_edges(%Graph{} = ng, %Graph{} = t) do
     t
     |> Graph.get_edges()
-    |> Enum.reduce(ng, fn %{v1: v1, v2: v2}, acc ->
+    |> Enum.reduce(ng, fn %{v1: v1, v2: v2, metadata: metadata}, acc ->
       if Graph.has_vertex?(ng, v2) do
         acc
-        |> Graph.add_edge({v1, :-}, v2, nesting: true)
-        |> Graph.add_edge(v2, {v1, :+}, nesting: true)
+        |> Graph.add_edge({v1, :-}, v2, metadata, nesting: true)
+        |> Graph.add_edge(v2, {v1, :+}, metadata, nesting: true)
       else
         acc
-        |> Graph.add_edge({v1, :-}, {v2, :-}, nesting: true)
-        |> Graph.add_edge({v2, :+}, {v1, :+}, nesting: true)
+        |> Graph.add_edge({v1, :-}, {v2, :-}, metadata, nesting: true)
+        |> Graph.add_edge({v2, :+}, {v1, :+}, metadata, nesting: true)
       end
     end)
   end
@@ -105,7 +105,7 @@ defmodule Graph.NestingGraph do
           {Graph.t(), [{Vertex.id(), Vertex.id()}]}
         ) :: {Graph.t(), [{Vertex.id(), Vertex.id()}]}
   defp add_edge({_, v1, v2}, {%Graph{} = g, cycles}) do
-    case Graph.add_edge(g, v1, v2) do
+    case Graph.add_edge(g, v1, v2, %{}) do
       %Graph{} = g ->
         {g, cycles}
 
@@ -207,8 +207,8 @@ defmodule Graph.NestingGraph do
 
   @spec do_insert_cyclic_edge(Graph.t(), Vertex.id(), Vertex.id()) :: Graph.t()
   defp do_insert_cyclic_edge(%Graph{} = g, v1, v2) do
-    case Graph.add_edge(g, v1, v2) do
-      {:error, _} -> Graph.add_edge(g, v2, v1, inverted: true)
+    case Graph.add_edge(g, v1, v2, %{}) do
+      {:error, _} -> Graph.add_edge(g, v2, v1, %{}, inverted: true)
       g -> g
     end
   end
