@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- [TD-5284] Update dependencies
+
 ## [1.2.0] 2021-06-29
 
 ### Fixed
