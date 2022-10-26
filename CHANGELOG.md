@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.0] 2022-10-26
+
+### Changed
+
+- [TD-5284] Update dependencies
+
 ## [1.2.0] 2021-06-29
 
 ### Fixed
