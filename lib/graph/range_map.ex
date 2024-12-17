@@ -26,7 +26,7 @@ defmodule Graph.RangeMap do
   @spec put(t, range) :: t
   def put(range_map, range)
 
-  def put(%__MODULE__{ranges: rs, counts: cs} = range_map, _.._ = range) do
+  def put(%__MODULE__{ranges: rs, counts: cs} = range_map, _.._//_ = range) do
     if MapSet.member?(rs, range) do
       range_map
     else

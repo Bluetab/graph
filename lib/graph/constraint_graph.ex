@@ -57,16 +57,16 @@ defmodule Graph.ConstraintGraph do
     |> Enum.flat_map(& &1)
     |> Enum.map(&Map.get(%{s => vc, t => vc}, &1, &1))
     |> Enum.chunk_every(2)
-    |> Enum.reject(&is_self_loop?(&1, vc))
+    |> Enum.reject(&self_loop?(&1, vc))
     |> Enum.reduce(gc, &add_constraint/2)
     |> Graph.del_vertex(s)
     |> Graph.del_vertex(t)
     |> Graph.add_vertex(vc)
   end
 
-  @spec is_self_loop?([vertex], vertex) :: boolean
-  defp is_self_loop?([v, v], v), do: true
-  defp is_self_loop?(_, _), do: false
+  @spec self_loop?([vertex], vertex) :: boolean
+  defp self_loop?([v, v], v), do: true
+  defp self_loop?(_, _), do: false
 
   @doc """
   For a given constraint graph `cg` and measure function `b`, returns the first

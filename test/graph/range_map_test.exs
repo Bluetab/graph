@@ -1,5 +1,5 @@
 defmodule Graph.RangeMapTest do
-  use ExUnit.Case
+  use GraphCase
 
   alias Graph.RangeMap
 
@@ -23,7 +23,7 @@ defmodule Graph.RangeMapTest do
 
     test "returns the greedy covering set" do
       assert %RangeMap{} = rm = RangeMap.new([1..9, 2..4, 4, 6..9, 7..8])
-      assert RangeMap.greedy_cover(rm) == [4, 7]
+      assert RangeMap.greedy_cover(rm) ||| [4, 7]
     end
   end
 end

@@ -16,14 +16,17 @@ import Config
 #
 #     Application.get_env(:graph, :key)
 #
-# You can also configure a third-party app:
-#
-#     config :logger, level: :info
-#
+
+# Configures Elixir's Logger
+# set EX_LOGGER_FORMAT environment variable to override Elixir's Logger format
+# (without the 'end of line' character)
+# EX_LOGGER_FORMAT='$date $time [$level] $message'
 config :logger, :console,
-  format: "$date\T$time\Z [$level]$levelpad $metadata$message\n",
+  format:
+    (System.get_env("EX_LOGGER_FORMAT") || "$date\T$time\Z [$level] $metadata$message") <>
+      "\n",
   level: :info,
-  metadata: [:module],
+  metadata: [:pid, :module],
   utc_log: true
 
 # It is also possible to import configuration files, relative to this

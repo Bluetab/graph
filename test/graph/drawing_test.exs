@@ -26,7 +26,7 @@ defmodule Graph.DrawingTest do
       assert %Drawing{} = d = Drawing.new(layout, &label_fn/1)
       assert %{groups: groups} = d
 
-      assert groups ==
+      assert groups |||
                [
                  %{id: :r, w: 1060, x: 0, y: 0, z: 0, h: 134},
                  %{id: :a, w: 460, x: 20, y: 36, z: 1, h: 78},
@@ -40,7 +40,7 @@ defmodule Graph.DrawingTest do
       assert %Drawing{} = d = Drawing.new(layout, &label_fn/1)
       assert %{paths: paths} = d
 
-      assert paths ==
+      assert paths |||
                [
                  %{v1: :a1, v2: :a2, path: "M 240 83 L 260 83"},
                  %{v1: :a2, v2: :b1, path: "M 460 83 L 480 83 L 580 83 L 600 83"},
@@ -55,7 +55,7 @@ defmodule Graph.DrawingTest do
       assert %Drawing{} = d = Drawing.new(layout, &label_fn/1)
       assert %{resources: resources} = d
 
-      assert resources ==
+      assert resources |||
                [
                  %{h: 22, id: :a1, w: 200, x: 40, y: 72},
                  %{h: 22, id: :a2, w: 200, x: 260, y: 72},

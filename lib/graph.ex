@@ -43,15 +43,15 @@ defmodule Graph do
 
       iex> g = Graph.new([:foo, :bar])
       iex> Graph.vertices(g)
-      [:bar, :foo]
+      [:foo, :bar]
 
       iex> g = Graph.new(%{foo: [w: 0], bar: [w: 1]})
       iex> Graph.vertices(g)
-      [:bar, :foo]
+      [:foo, :bar]
 
       iex> g = Graph.new([foo: %{w: 0}, bar: []])
       iex> Graph.vertices(g)
-      [:bar, :foo]
+      [:foo, :bar]
 
   """
   @spec new(Enumerable.t() | t, Keyword.t()) :: t
@@ -405,13 +405,13 @@ defmodule Graph do
     end
   end
 
-  @spec is_tree(t) :: true | false
-  def is_tree(%__MODULE__{} = g) do
+  @spec tree?(t) :: true | false
+  def tree?(%__MODULE__{} = g) do
     1 + no_edges(g) == no_vertices(g) and Enum.count(Traversal.components(g)) == 1
   end
 
-  @spec is_arborescence(t) :: true | false
-  def is_arborescence(%__MODULE__{} = g) do
+  @spec arborescence?(t) :: true | false
+  def arborescence?(%__MODULE__{} = g) do
     Traversal.arborescence_root(g) != nil
   end
 
@@ -693,7 +693,7 @@ defmodule Graph do
     |> List.foldl(q0, fn e, q -> :queue.in(e, q) end)
   end
 
-  def is_acyclic?(%__MODULE__{} = g) do
+  def acyclic?(%__MODULE__{} = g) do
     Traversal.loop_vertices(g) == [] and Traversal.topsort(g) != false
   end
 

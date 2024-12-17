@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- [TD-6911] Bump to Elixir 1.17 and updated dependencies
+
 ## [1.3.0] 2022-10-26
 
 ### Changed

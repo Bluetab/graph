@@ -47,8 +47,8 @@ defmodule Graph.LevelGraph do
     %{lg | g: Graph.subgraph(g, vs)}
   end
 
-  @spec is_proper?(t) :: boolean
-  def is_proper?(%__MODULE__{g: g} = lg) do
+  @spec proper?(t) :: boolean
+  def proper?(%__MODULE__{g: g} = lg) do
     g
     |> Graph.edges()
     |> Enum.all?(&(span(lg, &1) == 1))

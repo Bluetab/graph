@@ -126,15 +126,16 @@ defmodule Graph.LayoutTest do
       assert %{gc: gc2} = site_stats
 
       assert [{v, w}] = edges(gc1)
-      assert Enum.sort([v, w]) == [:blob, :sqldb]
+      assert Enum.sort([v, w]) ||| [:blob, :sqldb]
       assert [{v1, w1}, {v2, w2}, {v3, w3}] = edges(gc2)
 
-      assert [v1, v2, v3, w1, w2, w3] |> Enum.uniq() |> Enum.sort() == [
-               :src_site_cus,
-               :src_site_ext,
-               :src_site_seg,
-               :src_site_web
-             ]
+      assert [v1, v2, v3, w1, w2, w3] |> Enum.uniq() |> Enum.sort() |||
+               [
+                 :src_site_cus,
+                 :src_site_ext,
+                 :src_site_seg,
+                 :src_site_web
+               ]
     end
 
     @tag vertices: @vertices
@@ -153,8 +154,8 @@ defmodule Graph.LayoutTest do
       ids = [:sql1, :dwh11]
       assert %ClusteredLevelGraph{g: %{g: _g} = lg} = clg = RankAssignment.assign_rank(g, t, ids)
 
-      assert LevelGraph.is_proper?(lg)
-      assert ClusteredLevelGraph.is_proper?(clg)
+      assert LevelGraph.proper?(lg)
+      assert ClusteredLevelGraph.proper?(clg)
 
       assert %ClusteredLevelGraph{} = CrossingReduction.clustered_crossing_reduction(clg)
     end

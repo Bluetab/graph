@@ -54,7 +54,7 @@ defmodule Graph.CoordinateAssignmentTest do
     test("type1 conflicts and vertical assignment", %{lg: lg}) do
       conflicts = CoordinateAssignment.type1_conflicts(lg)
 
-      assert conflicts == [{36, 43}, {31, 46}]
+      assert conflicts ||| [{36, 43}, {31, 46}]
 
       root = CoordinateAssignment.vertical_alignment(lg, conflicts)
 

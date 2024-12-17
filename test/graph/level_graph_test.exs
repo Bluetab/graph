@@ -14,8 +14,8 @@ defmodule Graph.LevelGraphTest do
     @tag edges: [{11, 21}, {12, 22}, {13, 21}, {14, 23}]
     test "vertices_by_level/2 returns the vertices of the level", %{g: g} do
       assert lg = LevelGraph.new(g)
-      assert LevelGraph.vertices_by_level(lg, 1) == [11, 12, 13, 14]
-      assert LevelGraph.vertices_by_level(lg, 2) == [21, 22, 23]
+      assert LevelGraph.vertices_by_level(lg, 1) ||| [11, 12, 13, 14]
+      assert LevelGraph.vertices_by_level(lg, 2) ||| [21, 22, 23]
     end
 
     @tag vertices: Map.new(1..10, fn l -> {l, %{r: l}} end)
@@ -24,8 +24,11 @@ defmodule Graph.LevelGraphTest do
       assert lg = LevelGraph.new(g, :r)
       assert lg = LevelGraph.subgraph(lg, [1, 2, 3])
       assert %{g: g} = lg
-      assert Graph.vertices(g) == [1, 2, 3]
-      assert [e1, e2] = g |> Graph.get_edges() |> Enum.sort_by(fn %{v1: v1, v2: v2} -> {v1, v2} end)
+      assert Graph.vertices(g) ||| [1, 2, 3]
+
+      assert [e1, e2] =
+               g |> Graph.get_edges() |> Enum.sort_by(fn %{v1: v1, v2: v2} -> {v1, v2} end)
+
       assert %{v1: 1, v2: 2} = e1
       assert %{v1: 1, v2: 3} = e2
 

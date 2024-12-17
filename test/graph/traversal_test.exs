@@ -50,34 +50,34 @@ defmodule Graph.TraversalTest do
 
     @tag edges: [foo: :bar, bar: :baz, bar: :xyzzy]
     test "reaching/2 returns reaching vertices", %{g: g} do
-      assert Traversal.reaching([:xyzzy], g) <~> [:foo, :bar, :xyzzy]
+      assert Traversal.reaching([:xyzzy], g) ||| [:foo, :bar, :xyzzy]
     end
 
     @tag edges: [foo: :bar, bar: :baz, bar: :xyzzy]
     test "reaching/3 returns reaching vertices", %{g: g} do
-      assert Traversal.reaching([:xyzzy], g, 3) <~> [:foo, :bar, :xyzzy]
+      assert Traversal.reaching([:xyzzy], g, 3) ||| [:foo, :bar, :xyzzy]
     end
 
     @tag edges: [foo: :bar, bar: :baz, bar: :xyzzy]
     test "reaching/3 returns reaching vertices under a given limit", %{g: g} do
-      assert Traversal.reaching([:xyzzy], g, 2) <~> [:bar, :xyzzy]
-      assert Traversal.reaching([:xyzzy], g, 1) == [:xyzzy]
+      assert Traversal.reaching([:xyzzy], g, 2) ||| [:bar, :xyzzy]
+      assert Traversal.reaching([:xyzzy], g, 1) ||| [:xyzzy]
     end
 
     @tag edges: [foo: :bar, bar: :baz, baz: :xyzzy]
     test "reachable/3 returns reachable vertices", %{g: g} do
-      assert Traversal.reachable([:foo], g, 10) <~> [:foo, :bar, :baz, :xyzzy]
+      assert Traversal.reachable([:foo], g, 10) ||| [:foo, :bar, :baz, :xyzzy]
     end
 
     @tag edges: [foo: :bar, bar: :baz, baz: :xyzzy]
     test "reachable/3 returns reachable vertices under a given limit", %{g: g} do
-      assert Traversal.reachable([:foo], g, 3) <~> [:foo, :bar, :baz]
-      assert Traversal.reachable([:foo], g, 1) == [:foo]
+      assert Traversal.reachable([:foo], g, 3) ||| [:foo, :bar, :baz]
+      assert Traversal.reachable([:foo], g, 1) ||| [:foo]
     end
 
     @tag edges: [foo: :bar, bar: :baz, bar: :xyzzy]
     test "reachable_neighbours/2 returns reachable neighbouring vertices", %{g: g} do
-      assert Traversal.reachable_neighbours([:foo], g) <~> [:xyzzy, :baz, :bar]
+      assert Traversal.reachable_neighbours([:foo], g) ||| [:xyzzy, :baz, :bar]
     end
 
     @tag edges: [foo: :bar, foo: :baz, bar: :xyzzy, baz: :spqr]
@@ -91,10 +91,10 @@ defmodule Graph.TraversalTest do
                [[1, 2], [3, 4]]
                |> Enum.map(&Traversal.reaching_subgraph(g, &1))
 
-      assert Graph.vertices(t1) == [1, 2, :a, :b]
-      assert Graph.vertices(t2) == [3, 4, :a, :b, :c]
-      assert edges(t1) == [a: 1, a: :b, b: 2]
-      assert edges(t2) == [a: :b, b: :c, c: 3, c: 4]
+      assert Graph.vertices(t1) ||| [1, 2, :a, :b]
+      assert Graph.vertices(t2) ||| [3, 4, :a, :b, :c]
+      assert edges(t1) ||| [a: 1, a: :b, b: 2]
+      assert edges(t2) ||| [a: :b, b: :c, c: 3, c: 4]
     end
   end
 end

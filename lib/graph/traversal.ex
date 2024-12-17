@@ -23,7 +23,7 @@ defmodule Graph.Traversal do
   def cyclic_strong_components(%Graph{} = g) do
     g
     |> strong_components()
-    |> Enum.reject(&is_singleton?(g, &1))
+    |> Enum.reject(&singleton?(g, &1))
   end
 
   @spec reaching(vertices, Graph.t()) :: vertices
@@ -213,19 +213,19 @@ defmodule Graph.Traversal do
 
   defp posttraverse([], _g, _t, l), do: l
 
-  @spec is_singleton?(Graph.t(), component) :: boolean
-  defp is_singleton?(g, c)
+  @spec singleton?(Graph.t(), component) :: boolean
+  defp singleton?(g, c)
 
-  defp is_singleton?(%Graph{} = g, [v]) do
-    not is_reflexive_vertex(g, v)
+  defp singleton?(%Graph{} = g, [v]) do
+    not reflexive_vertex?(g, v)
   end
 
-  defp is_singleton?(%Graph{} = _g, _), do: false
+  defp singleton?(%Graph{} = _g, _), do: false
 
   def loop_vertices(%Graph{} = g) do
     g
     |> Graph.vertices()
-    |> Enum.filter(&is_reflexive_vertex(g, &1))
+    |> Enum.filter(&reflexive_vertex?(g, &1))
   end
 
   def post_order(%Graph{} = g) do
@@ -234,7 +234,7 @@ defmodule Graph.Traversal do
     |> Enum.reverse()
   end
 
-  defp is_reflexive_vertex(%Graph{} = g, v) do
+  defp reflexive_vertex?(%Graph{} = g, v) do
     g
     |> Graph.out_neighbours(v)
     |> Enum.member?(v)

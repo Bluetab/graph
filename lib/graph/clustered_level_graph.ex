@@ -24,7 +24,7 @@ defmodule Graph.ClusteredLevelGraph do
   """
   @spec new(LevelGraph.t(), Graph.t()) :: t
   def new(%LevelGraph{g: g} = lg, %Graph{} = t) do
-    with {:tree, true} <- {:tree, Graph.is_arborescence(t)},
+    with {:tree, true} <- {:tree, Graph.arborescence?(t)},
          v1s <- Graph.vertices(g),
          v2s <- Graph.sink_vertices(t),
          {:diff, []} <- {:diff, diff(v1s, v2s)} do
@@ -82,9 +82,9 @@ defmodule Graph.ClusteredLevelGraph do
   $c in C$ contains a vertex on any spanned level: $forall i in Phi(c): V_c nn
   V_i != O/$
   """
-  @spec is_proper?(t) :: boolean
-  def is_proper?(%__MODULE__{g: g, t: t} = clg) do
-    LevelGraph.is_proper?(g) and
+  @spec proper?(t) :: boolean
+  def proper?(%__MODULE__{g: g, t: t} = clg) do
+    LevelGraph.proper?(g) and
       Enum.all?(ClusterTree.clusters(t), fn c ->
         clg
         |> levels(c)
@@ -281,7 +281,7 @@ defmodule Graph.ClusteredLevelGraph do
 
         {g, t, w}
       end)
-      |> (fn {g, t, w_prev} -> {Graph.add_edge(g, w_prev, last, l), t} end).()
+      |> then(fn {g, t, w_prev} -> {Graph.add_edge(g, w_prev, last, l), t} end)
 
     lg = %{lg | g: g}
     %{clg | g: lg, t: t}

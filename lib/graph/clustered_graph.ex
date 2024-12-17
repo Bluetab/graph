@@ -20,7 +20,7 @@ defmodule Graph.ClusteredGraph do
       raise(ArgumentError, "vertices must match")
     end
 
-    unless Graph.is_tree(t) do
+    unless Graph.tree?(t) do
       raise(ArgumentError, "second argument must be a tree")
     end
 
