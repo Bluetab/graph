@@ -77,7 +77,7 @@ defmodule Graph.Drawing do
 
     g
     |> Graph.get_edges(fn {_, {v1, v2, label}} -> {v1, v2, label} end)
-    |> Enum.reject(fn {v1, v2, _} -> is_border?(v1) or is_border?(v2) end)
+    |> Enum.reject(fn {v1, v2, _} -> border?(v1) or border?(v2) end)
     |> Enum.group_by(&endpoints/1, fn {v1, v2, _} -> [v1, v2] end)
     |> Enum.map(path_fn)
   end
@@ -158,9 +158,9 @@ defmodule Graph.Drawing do
     end
   end
 
-  defp is_border?({:l, _, _}), do: true
-  defp is_border?({:r, _, _}), do: true
-  defp is_border?({_, :-}), do: true
-  defp is_border?({_, :+}), do: true
-  defp is_border?(_), do: false
+  defp border?({:l, _, _}), do: true
+  defp border?({:r, _, _}), do: true
+  defp border?({_, :-}), do: true
+  defp border?({_, :+}), do: true
+  defp border?(_), do: false
 end

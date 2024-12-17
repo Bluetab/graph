@@ -38,26 +38,27 @@ defmodule Graph.CrossingReductionGraphTest do
       assert %{c1: c1, c2: c2, c3: c3, c4: c4, c5: c5} =
                CrossingReduction.crossing_reduction_graphs(clg, :down)
 
-      assert edges(c1) == [
-               {1, :c2},
-               {1, :c2},
-               {2, :c2},
-               {2, :c2},
-               {2, :c2},
-               {2, :f},
-               {3, :c2},
-               {3, :e},
-               {4, :c3},
-               {4, :c3},
-               {4, :c3},
-               {4, :f},
-               {5, :c3}
-             ]
+      assert edges(c1) |||
+               [
+                 {1, :c2},
+                 {1, :c2},
+                 {2, :c2},
+                 {2, :c2},
+                 {2, :c2},
+                 {2, :f},
+                 {3, :c2},
+                 {3, :e},
+                 {4, :c3},
+                 {4, :c3},
+                 {4, :c3},
+                 {4, :f},
+                 {5, :c3}
+               ]
 
-      assert edges(c2) == [{1, :c4}, {1, :c4}, {2, :c}, {2, :c4}, {2, :d}, {3, :d}]
-      assert edges(c3) == [{4, :c5}, {4, :g}, {4, :h}, {5, :j}]
-      assert edges(c4) == [{1, :a}, {1, :b}, {2, :b}]
-      assert edges(c5) == [{4, :i}]
+      assert edges(c2) ||| [{1, :c4}, {1, :c4}, {2, :c}, {2, :c4}, {2, :d}, {3, :d}]
+      assert edges(c3) ||| [{4, :c5}, {4, :g}, {4, :h}, {5, :j}]
+      assert edges(c4) ||| [{1, :a}, {1, :b}, {2, :b}]
+      assert edges(c5) ||| [{4, :i}]
     end
 
     @tag vertices: @vertices
@@ -70,25 +71,26 @@ defmodule Graph.CrossingReductionGraphTest do
       assert %{c1: c1, c2: c2, c3: c3, c5: c5} =
                CrossingReduction.crossing_reduction_graphs(clg, :up)
 
-      assert edges(c1) == [
-               a: :c2,
-               b: :c2,
-               b: :c2,
-               c: :c2,
-               d: 3,
-               d: :c2,
-               e: 3,
-               f: :c2,
-               f: :c3,
-               g: :c3,
-               h: :c3,
-               i: :c3,
-               j: :c3
-             ]
+      assert edges(c1) |||
+               [
+                 a: :c2,
+                 b: :c2,
+                 b: :c2,
+                 c: :c2,
+                 d: 3,
+                 d: :c2,
+                 e: 3,
+                 f: :c2,
+                 f: :c3,
+                 g: :c3,
+                 h: :c3,
+                 i: :c3,
+                 j: :c3
+               ]
 
-      assert edges(c2) == [a: 1, b: 1, b: 2, c: 2, d: 2, f: 2]
-      assert edges(c3) == [f: 4, g: 4, h: 4, i: 4, j: :c5]
-      assert edges(c5) == [j: 5]
+      assert edges(c2) ||| [a: 1, b: 1, b: 2, c: 2, d: 2, f: 2]
+      assert edges(c3) ||| [f: 4, g: 4, h: 4, i: 4, j: :c5]
+      assert edges(c5) ||| [j: 5]
     end
   end
 end

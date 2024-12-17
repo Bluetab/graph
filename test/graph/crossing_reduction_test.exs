@@ -100,27 +100,30 @@ defmodule Graph.CrossingReductionTest do
 
       assert %{blob: %{g: g1}, root: %{g: g0}, sqldb: %{g: g2}} = crgs
 
-      assert edges(g0) == [
-               {{:grouped_sales, :sqlcluster, 10}, {:grouped_sales, :sqlcluster, 11}},
-               {{:l, :blob, 10}, :blob},
-               {{:l, :root, 10}, {:l, :root, 11}},
-               {{:pages_dat, :sqlcluster, 10}, {:pages_dat, :sqlcluster, 11}},
-               {{:pageviews_dat, :v_pageviews, 10}, :sqldb},
-               {{:r, :blob, 10}, :blob},
-               {{:r, :root, 10}, {:r, :root, 11}},
-               {{:sales, :sqlcluster, 10}, {:sales, :sqlcluster, 11}},
-               {{:sites_dat, :sites, 10}, :sqldb}
-             ]
+      assert edges(g0) |||
+               [
+                 {{:grouped_sales, :sqlcluster, 10}, {:grouped_sales, :sqlcluster, 11}},
+                 {{:l, :blob, 10}, :blob},
+                 {{:l, :root, 10}, {:l, :root, 11}},
+                 {{:pages_dat, :sqlcluster, 10}, {:pages_dat, :sqlcluster, 11}},
+                 {{:pageviews_dat, :v_pageviews, 10}, :sqldb},
+                 {{:r, :blob, 10}, :blob},
+                 {{:r, :root, 10}, {:r, :root, 11}},
+                 {{:sales, :sqlcluster, 10}, {:sales, :sqlcluster, 11}},
+                 {{:sites_dat, :sites, 10}, :sqldb}
+               ]
 
-      assert edges(g1) == [
-               {{:l, :blob, 10}, {:l, :blob, 11}},
-               {{:r, :blob, 10}, {:r, :blob, 11}}
-             ]
+      assert edges(g1) |||
+               [
+                 {{:l, :blob, 10}, {:l, :blob, 11}},
+                 {{:r, :blob, 10}, {:r, :blob, 11}}
+               ]
 
-      assert edges(g2) == [
-               {{:pageviews_dat, :v_pageviews, 10}, {:pageviews_dat, :v_pageviews, 11}},
-               {{:sites_dat, :sites, 10}, {:sites_dat, :sites, 11}}
-             ]
+      assert edges(g2) |||
+               [
+                 {{:pageviews_dat, :v_pageviews, 10}, {:pageviews_dat, :v_pageviews, 11}},
+                 {{:sites_dat, :sites, 10}, {:sites_dat, :sites, 11}}
+               ]
     end
 
     @tag vertices: @vertices
@@ -135,35 +138,38 @@ defmodule Graph.CrossingReductionTest do
 
       assert %{blob: %{g: g1}, stats: %{g: g2}, root: %{g: g0}} = crgs
 
-      assert edges(g0) == [
-               {{:grouped_sales, :sqlcluster, 11}, :blob},
-               {{:l, :blob, 11}, :blob},
-               {{:l, :root, 11}, {:l, :root, 10}},
-               {{:pages_dat, :sqlcluster, 11}, :blob},
-               {{:pageviews_dat, :v_pageviews, 11}, :blob},
-               {{:r, :blob, 11}, :blob},
-               {{:r, :root, 11}, {:r, :root, 10}},
-               {{:sales, :sqlcluster, 11}, :blob},
-               {{:sites_dat, :sites, 11}, :blob}
-             ]
+      assert edges(g0) |||
+               [
+                 {{:grouped_sales, :sqlcluster, 11}, :blob},
+                 {{:l, :blob, 11}, :blob},
+                 {{:l, :root, 11}, {:l, :root, 10}},
+                 {{:pages_dat, :sqlcluster, 11}, :blob},
+                 {{:pageviews_dat, :v_pageviews, 11}, :blob},
+                 {{:r, :blob, 11}, :blob},
+                 {{:r, :root, 11}, {:r, :root, 10}},
+                 {{:sales, :sqlcluster, 11}, :blob},
+                 {{:sites_dat, :sites, 11}, :blob}
+               ]
 
-      assert edges(g1) == [
-               {{:grouped_sales, :sqlcluster, 11}, :stats},
-               {{:l, :blob, 11}, {:l, :blob, 10}},
-               {{:pages_dat, :sqlcluster, 11}, :stats},
-               {{:pageviews_dat, :v_pageviews, 11}, :stats},
-               {{:r, :blob, 11}, {:r, :blob, 10}},
-               {{:sales, :sqlcluster, 11}, :stats},
-               {{:sites_dat, :sites, 11}, :stats}
-             ]
+      assert edges(g1) |||
+               [
+                 {{:grouped_sales, :sqlcluster, 11}, :stats},
+                 {{:l, :blob, 11}, {:l, :blob, 10}},
+                 {{:pages_dat, :sqlcluster, 11}, :stats},
+                 {{:pageviews_dat, :v_pageviews, 11}, :stats},
+                 {{:r, :blob, 11}, {:r, :blob, 10}},
+                 {{:sales, :sqlcluster, 11}, :stats},
+                 {{:sites_dat, :sites, 11}, :stats}
+               ]
 
-      assert edges(g2) == [
-               {{:grouped_sales, :sqlcluster, 11}, {:grouped_sales, :sqlcluster, 10}},
-               {{:pages_dat, :sqlcluster, 11}, {:pages_dat, :sqlcluster, 10}},
-               {{:pageviews_dat, :v_pageviews, 11}, {:pageviews_dat, :v_pageviews, 10}},
-               {{:sales, :sqlcluster, 11}, {:sales, :sqlcluster, 10}},
-               {{:sites_dat, :sites, 11}, {:sites_dat, :sites, 10}}
-             ]
+      assert edges(g2) |||
+               [
+                 {{:grouped_sales, :sqlcluster, 11}, {:grouped_sales, :sqlcluster, 10}},
+                 {{:pages_dat, :sqlcluster, 11}, {:pages_dat, :sqlcluster, 10}},
+                 {{:pageviews_dat, :v_pageviews, 11}, {:pageviews_dat, :v_pageviews, 10}},
+                 {{:sales, :sqlcluster, 11}, {:sales, :sqlcluster, 10}},
+                 {{:sites_dat, :sites, 11}, {:sites_dat, :sites, 10}}
+               ]
     end
 
     @tag vertices: @vertices
@@ -181,15 +187,16 @@ defmodule Graph.CrossingReductionTest do
       assert %{gc: gc2} = site_stats
 
       assert [{v, w}] = edges(gc1)
-      assert Enum.sort([v, w]) == [:blob, :sqldb]
+      assert Enum.sort([v, w]) ||| [:blob, :sqldb]
       assert [{v1, w1}, {v2, w2}, {v3, w3}] = edges(gc2)
 
-      assert [v1, v2, v3, w1, w2, w3] |> Enum.uniq() |> Enum.sort() == [
-               :src_site_cus,
-               :src_site_ext,
-               :src_site_seg,
-               :src_site_web
-             ]
+      assert [v1, v2, v3, w1, w2, w3] |> Enum.uniq() |> Enum.sort() |||
+               [
+                 :src_site_cus,
+                 :src_site_ext,
+                 :src_site_seg,
+                 :src_site_web
+               ]
     end
 
     @tag vertices: @vertices

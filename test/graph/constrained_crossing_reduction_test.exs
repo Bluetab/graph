@@ -41,7 +41,7 @@ defmodule Graph.ConstrainedCrossingReductionTest do
     @tag constraints: [c2: :c3]
     test "permute/4 returns a permutation of v2", %{g: g, gc: gc} do
       lg = LevelGraph.new(g)
-      assert ConstrainedCrossingReduction.permute(lg, gc, 2) == [:c2, :e, :f, :c3]
+      assert ConstrainedCrossingReduction.permute(lg, gc, 2) ||| [:c2, :e, :f, :c3]
     end
   end
 end

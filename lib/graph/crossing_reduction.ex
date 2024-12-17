@@ -73,8 +73,7 @@ defmodule Graph.CrossingReduction do
     |> Enum.filter(fn {span, _} -> MapSet.size(span) > 1 end)
     |> Enum.flat_map(fn {_, cs} -> cs end)
     |> Enum.group_by(&Graph.in_neighbours(t, &1))
-    |> Enum.reject(fn {parents, _} -> parents == [] end)
-    |> Enum.reject(fn {_, children} -> Enum.count(children) < 2 end)
+    |> Enum.reject(fn {parents, children} -> parents == [] or Enum.count(children) < 2 end)
     |> Enum.map(fn {[parent], children} -> {parent, children} end)
     |> Map.new(fn {parent, children} -> {parent, constraint_graph(children, t1, g)} end)
   end
@@ -95,7 +94,7 @@ defmodule Graph.CrossingReduction do
     |> Enum.map(&Graph.vertex_label(g, &1))
     |> Enum.map(&Map.get(&1, :b))
     |> Enum.reduce({0, 0}, fn b, {sum, count} -> {sum + b, count + 1} end)
-    |> (fn {sum, count} -> sum / count end).()
+    |> then(fn {sum, count} -> sum / count end)
   end
 
   @spec do_crossing_reduction_graphs(

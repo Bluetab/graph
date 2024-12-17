@@ -15,20 +15,20 @@ defmodule Graph.ClusterTreeTest do
                |> Enum.map(&Traversal.reaching_subgraph(t, &1))
                |> Enum.map(&ClusterTree.contracted/1)
 
-      assert Graph.vertices(t1) == [1, 2, :a]
-      assert Graph.vertices(t2) == [3, 4, :c]
-      assert edges(t1) == [a: 1, a: 2]
-      assert edges(t2) == [c: 3, c: 4]
+      assert Graph.vertices(t1) ||| [1, 2, :a]
+      assert Graph.vertices(t2) ||| [3, 4, :c]
+      assert edges(t1) ||| [a: 1, a: 2]
+      assert edges(t2) ||| [c: 3, c: 4]
     end
 
     @tag edges: [root: :foo, foo: :bar, foo: :baz, bar: :xyzzy, bar: :spqr]
     test "clusters/1 returns the clusters of a tree", %{g: t} do
-      assert ClusterTree.clusters(t) == [:bar, :foo, :root]
+      assert ClusterTree.clusters(t) ||| [:bar, :foo, :root]
     end
 
     @tag edges: [root: :foo, foo: :bar, foo: :baz, bar: :xyzzy, bar: :spqr]
     test "leaves/1 returns the leaves of a tree", %{g: t} do
-      assert ClusterTree.leaves(t) == [:baz, :spqr, :xyzzy]
+      assert ClusterTree.leaves(t) ||| [:baz, :spqr, :xyzzy]
     end
   end
 end

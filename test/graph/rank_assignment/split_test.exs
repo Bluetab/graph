@@ -16,14 +16,14 @@ defmodule Graph.RankAssignment.SplitTest do
   describe "Graph.RankAssignment.Split" do
     @tag tree: [root: [g1: [:a, :b, :d], g2: [:c, :e]]]
     test "splits multi-span clusters by span", %{t: t} do
-      assert Graph.vertex(t, :root, :r) == [1..4]
+      assert Graph.vertex(t, :root, :r) ||| [1..4]
       assert %Graph{} = t = Split.split_clusters(t)
-      assert Graph.is_arborescence(t)
-      assert Graph.vertices(t) == [:a, :b, :c, :d, :e, :g2, :root, {:g1, 1..2}, {:g1, 4..4}]
+      assert Graph.arborescence?(t)
+      assert Graph.vertices(t) ||| [:a, :b, :c, :d, :e, :g2, :root, {:g1, 1..2}, {:g1, 4..4}]
       assert Graph.vertex(t, {:g1, 1..2}, :r) == 1..2
       assert Graph.vertex(t, {:g1, 4..4}, :r) == 4..4
-      assert out_neighbours(t, {:g1, 1..2}) == [:a, :b]
-      assert out_neighbours(t, {:g1, 4..4}) == [:d]
+      assert out_neighbours(t, {:g1, 1..2}) ||| [:a, :b]
+      assert out_neighbours(t, {:g1, 4..4}) ||| [:d]
     end
   end
 end

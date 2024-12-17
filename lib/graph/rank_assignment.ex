@@ -114,11 +114,11 @@ defmodule Graph.RankAssignment do
       r when is_integer(r) ->
         r * spacing
 
-      r1..r2 ->
+      r1..r2//_ ->
         h = ClusterTree.height(t, v)
         (r1 * spacing - h)..(r2 * spacing + h)
 
-      [r1..r2] ->
+      [r1..r2//_] ->
         h = ClusterTree.height(t, v)
         (r1 * spacing - h)..(r2 * spacing + h)
     end
@@ -128,7 +128,7 @@ defmodule Graph.RankAssignment do
     {Enum.reduce(vs, g, &Graph.put_label(&2, &1, r: r)), t}
   end
 
-  defp put_nesting_rank({r1..r2, ws}, {%Graph{} = g, %Graph{} = t}) do
+  defp put_nesting_rank({r1..r2//_, ws}, {%Graph{} = g, %Graph{} = t}) do
     Enum.reduce(ws, {g, t}, fn w, {g, t} ->
       t =
         t

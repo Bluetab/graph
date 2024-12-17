@@ -32,7 +32,7 @@ defmodule Graph.Drawing.Grid do
     x_scale =
       lg
       |> LevelGraph.vertices_by_level()
-      |> Enum.map(fn {x, vs} -> {x, max_width(vs, width_fn), Enum.find(vs, &is_delimiter?/1)} end)
+      |> Enum.map(fn {x, vs} -> {x, max_width(vs, width_fn), Enum.find(vs, &delimiter?/1)} end)
       |> Enum.sort()
       |> Enum.reduce({[], nil}, &accumulate_width(&1, &2, x_spacing(opts), padding_fn(opts)))
       |> elem(0)
@@ -94,9 +94,9 @@ defmodule Graph.Drawing.Grid do
     {[{x, width, padding + spacing + right, padding + spacing + right + width} | acc], v}
   end
 
-  defp is_delimiter?({_, :-}), do: true
-  defp is_delimiter?({_, :+}), do: true
-  defp is_delimiter?(_), do: false
+  defp delimiter?({_, :-}), do: true
+  defp delimiter?({_, :+}), do: true
+  defp delimiter?(_), do: false
 
   defp padding_fn(opts) do
     p = Keyword.get(opts, :x_padding, @default_x_padding)

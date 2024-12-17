@@ -81,7 +81,7 @@ defmodule Graph.Layout do
 
       t
       |> Graph.out_neighbours(w)
-      |> Enum.filter(&is_border?/1)
+      |> Enum.filter(&border?/1)
       |> Enum.reduce(lg, fn
         {:l, _, _} = v, lg -> LevelGraph.put_label(lg, v, x: min)
         {:r, _, _} = v, lg -> LevelGraph.put_label(lg, v, x: max)
@@ -112,7 +112,7 @@ defmodule Graph.Layout do
       vs ->
         x =
           vs
-          |> Enum.reject(&is_dummy?/1)
+          |> Enum.reject(&dummy?/1)
           |> Enum.map(&Graph.vertex(t, &1, :x))
           |> Enum.flat_map(&Tuple.to_list/1)
           |> Enum.min_max()
@@ -120,7 +120,7 @@ defmodule Graph.Layout do
 
         r =
           vs
-          |> Enum.filter(&is_y_border?/1)
+          |> Enum.filter(&y_border?/1)
           |> Enum.map(&Graph.vertex(t, &1, :r))
           |> Enum.flat_map(&Tuple.to_list/1)
           |> Enum.min_max()
@@ -129,20 +129,20 @@ defmodule Graph.Layout do
     end
   end
 
-  defp is_border?({:l, _, _}), do: true
-  defp is_border?({:r, _, _}), do: true
-  defp is_border?(_), do: false
+  defp border?({:l, _, _}), do: true
+  defp border?({:r, _, _}), do: true
+  defp border?(_), do: false
 
-  defp is_dummy?({_, :-}), do: true
-  defp is_dummy?({_, :+}), do: true
-  defp is_dummy?({:l, _, _}), do: true
-  defp is_dummy?({:r, _, _}), do: true
-  defp is_dummy?({_v1, _v2, r}) when is_integer(r), do: true
-  defp is_dummy?(_), do: false
+  defp dummy?({_, :-}), do: true
+  defp dummy?({_, :+}), do: true
+  defp dummy?({:l, _, _}), do: true
+  defp dummy?({:r, _, _}), do: true
+  defp dummy?({_v1, _v2, r}) when is_integer(r), do: true
+  defp dummy?(_), do: false
 
-  defp is_y_border?({_, :-}), do: true
-  defp is_y_border?({_, :+}), do: true
-  defp is_y_border?(_), do: false
+  defp y_border?({_, :-}), do: true
+  defp y_border?({_, :+}), do: true
+  defp y_border?(_), do: false
 
   defp expand({min, max}, d1, d2), do: {min - d1, max + d2}
 end

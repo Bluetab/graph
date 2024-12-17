@@ -27,6 +27,6 @@ defmodule Graph.RankAssignment.Chunk do
   end
 
   defp flatten([_ | _] = rs), do: Enum.flat_map(rs, &flatten/1)
-  defp flatten(_.._ = r), do: Enum.map(r, & &1)
+  defp flatten(_.._//_ = r), do: Enum.map(r, & &1)
   defp flatten(r), do: [r]
 end

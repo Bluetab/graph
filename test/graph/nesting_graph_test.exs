@@ -14,33 +14,34 @@ defmodule Graph.NestingGraphTest do
 
       assert %ClusteredLevelGraph{g: %{g: g}} = ng
 
-      assert Graph.vertices(g) == [
-               1,
-               2,
-               3,
-               4,
-               {:a, :+},
-               {:a, :-},
-               {:b, :+},
-               {:b, :-},
-               {:c, :+},
-               {:c, :-},
-               {:d, :+},
-               {:d, :-}
-             ]
+      assert Graph.vertices(g) |||
+               [
+                 1,
+                 2,
+                 3,
+                 4,
+                 {:a, :+},
+                 {:a, :-},
+                 {:b, :+},
+                 {:b, :-},
+                 {:c, :+},
+                 {:c, :-},
+                 {:d, :+},
+                 {:d, :-}
+               ]
 
-      assert out_neighbours(g, {:a, :-}) == []
-      assert out_neighbours(g, {:b, :-}) == [1]
-      assert out_neighbours(g, {:c, :-}) == [{:d, :-}]
-      assert out_neighbours(g, {:d, :-}) == []
-      assert out_neighbours(g, {:a, :+}) == []
-      assert out_neighbours(g, {:b, :+}) == [{:a, :+}, {:d, :+}]
-      assert out_neighbours(g, {:c, :+}) == []
-      assert out_neighbours(g, {:d, :+}) == []
-      assert out_neighbours(g, 1) == [2, {:c, :+}]
-      assert out_neighbours(g, 2) == [3]
-      assert out_neighbours(g, 3) == [{:c, :+}]
-      assert out_neighbours(g, 4) == [{:b, :-}]
+      assert out_neighbours(g, {:a, :-}) ||| []
+      assert out_neighbours(g, {:b, :-}) ||| [1]
+      assert out_neighbours(g, {:c, :-}) ||| [{:d, :-}]
+      assert out_neighbours(g, {:d, :-}) ||| []
+      assert out_neighbours(g, {:a, :+}) ||| []
+      assert out_neighbours(g, {:b, :+}) ||| [{:a, :+}, {:d, :+}]
+      assert out_neighbours(g, {:c, :+}) ||| []
+      assert out_neighbours(g, {:d, :+}) ||| []
+      assert out_neighbours(g, 1) ||| [2, {:c, :+}]
+      assert out_neighbours(g, 2) ||| [3]
+      assert out_neighbours(g, 3) ||| [{:c, :+}]
+      assert out_neighbours(g, 4) ||| [{:b, :-}]
 
       %{
         1 => 6,
@@ -67,7 +68,7 @@ defmodule Graph.NestingGraphTest do
         |> Enum.filter(fn %{label: l} -> l[:inverted] end)
         |> Enum.map(fn %{v1: v1, v2: v2} -> {v1, v2} end)
 
-      assert inverted_edges == [{1, {:c, :+}}]
+      assert inverted_edges ||| [{1, {:c, :+}}]
     end
 
     @tag vertices: [:root, :a, :b, :a1, :a2, :b1, :b2, 1, 2, 3, 4]
@@ -78,45 +79,46 @@ defmodule Graph.NestingGraphTest do
 
       assert %ClusteredLevelGraph{g: %{g: g}} = ng
 
-      assert Graph.vertices(g) == [
-               1,
-               2,
-               3,
-               4,
-               {:a, :+},
-               {:a, :-},
-               {:a1, :+},
-               {:a1, :-},
-               {:a2, :+},
-               {:a2, :-},
-               {:b, :+},
-               {:b, :-},
-               {:b1, :+},
-               {:b1, :-},
-               {:b2, :+},
-               {:b2, :-},
-               {:root, :+},
-               {:root, :-}
-             ]
+      assert Graph.vertices(g) |||
+               [
+                 1,
+                 2,
+                 3,
+                 4,
+                 {:a, :+},
+                 {:a, :-},
+                 {:a1, :+},
+                 {:a1, :-},
+                 {:a2, :+},
+                 {:a2, :-},
+                 {:b, :+},
+                 {:b, :-},
+                 {:b1, :+},
+                 {:b1, :-},
+                 {:b2, :+},
+                 {:b2, :-},
+                 {:root, :+},
+                 {:root, :-}
+               ]
 
-      assert out_neighbours(g, 1) == [2, 4]
-      assert out_neighbours(g, 2) == [3]
-      assert out_neighbours(g, 3) == [4]
-      assert out_neighbours(g, 4) == []
-      assert out_neighbours(g, {:a, :+}) == []
-      assert out_neighbours(g, {:a, :-}) == []
-      assert out_neighbours(g, {:a1, :+}) == []
-      assert out_neighbours(g, {:a1, :-}) == []
-      assert out_neighbours(g, {:a2, :+}) == [b2: :-]
-      assert out_neighbours(g, {:a2, :-}) == []
-      assert out_neighbours(g, {:b, :+}) == []
-      assert out_neighbours(g, {:b, :-}) == []
-      assert out_neighbours(g, {:b1, :+}) == []
-      assert out_neighbours(g, {:b1, :-}) == []
-      assert out_neighbours(g, {:b2, :+}) == []
-      assert out_neighbours(g, {:b2, :-}) == []
-      assert out_neighbours(g, {:root, :+}) == []
-      assert out_neighbours(g, {:root, :-}) == []
+      assert out_neighbours(g, 1) ||| [2, 4]
+      assert out_neighbours(g, 2) ||| [3]
+      assert out_neighbours(g, 3) ||| [4]
+      assert out_neighbours(g, 4) ||| []
+      assert out_neighbours(g, {:a, :+}) ||| []
+      assert out_neighbours(g, {:a, :-}) ||| []
+      assert out_neighbours(g, {:a1, :+}) ||| []
+      assert out_neighbours(g, {:a1, :-}) ||| []
+      assert out_neighbours(g, {:a2, :+}) ||| [b2: :-]
+      assert out_neighbours(g, {:a2, :-}) ||| []
+      assert out_neighbours(g, {:b, :+}) ||| []
+      assert out_neighbours(g, {:b, :-}) ||| []
+      assert out_neighbours(g, {:b1, :+}) ||| []
+      assert out_neighbours(g, {:b1, :-}) ||| []
+      assert out_neighbours(g, {:b2, :+}) ||| []
+      assert out_neighbours(g, {:b2, :-}) ||| []
+      assert out_neighbours(g, {:root, :+}) ||| []
+      assert out_neighbours(g, {:root, :-}) ||| []
 
       %{
         1 => 4,
@@ -148,7 +150,7 @@ defmodule Graph.NestingGraphTest do
         |> ClusteredLevelGraph.split_long_edges()
         |> ClusteredLevelGraph.insert_border_segments()
 
-      assert ClusteredLevelGraph.is_proper?(clg), "Expected proper graph"
+      assert ClusteredLevelGraph.proper?(clg), "Expected proper graph"
     end
   end
 end

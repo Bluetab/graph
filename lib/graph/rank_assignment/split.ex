@@ -13,11 +13,11 @@ defmodule Graph.RankAssignment.Split do
     g
     |> ClusterTree.post_order_clusters()
     |> Enum.reject(&(Graph.in_degree(g, &1) == 0))
-    |> Enum.filter(&is_multispan?(g, &1))
+    |> Enum.filter(&multispan?(g, &1))
     |> Enum.reduce(g, &split_cluster/2)
   end
 
-  defp is_multispan?(%Graph{} = g, v) do
+  defp multispan?(%Graph{} = g, v) do
     case Graph.vertex(g, v, :r) do
       l when is_list(l) and length(l) > 1 -> true
       _ -> false
@@ -66,15 +66,15 @@ defmodule Graph.RankAssignment.Split do
     Enum.find(spans, &contains?(&1, rank_or_span))
   end
 
-  defp contains?(min..max, [span]) do
-    contains?(min..max, span)
+  defp contains?(_.._//_ = r, [span]) do
+    contains?(r, span)
   end
 
-  defp contains?(min..max, r1..r2) do
-    Enum.all?([r1, r2], &contains?(min..max, &1))
+  defp contains?(_.._//_ = r, r1..r2//_) do
+    Enum.all?([r1, r2], &contains?(r, &1))
   end
 
-  defp contains?(min..max, rank) do
-    Enum.member?(min..max, rank)
+  defp contains?(_.._//_ = r, rank) do
+    Enum.member?(r, rank)
   end
 end

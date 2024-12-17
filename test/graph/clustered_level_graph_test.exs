@@ -21,8 +21,8 @@ defmodule Graph.ClusteredLevelGraphTest do
       assert ClusteredLevelGraph.span(clg, :d) == {1, 2}
       assert ClusteredLevelGraph.span(clg, :e) == {2, 2}
 
-      assert LevelGraph.is_proper?(lg)
-      assert ClusteredLevelGraph.is_proper?(clg)
+      assert LevelGraph.proper?(lg)
+      assert ClusteredLevelGraph.proper?(clg)
     end
 
     @tag edges: [{1, 3}, {2, 4}]
@@ -32,12 +32,12 @@ defmodule Graph.ClusteredLevelGraphTest do
       assert clg = ClusteredLevelGraph.new(lg, t)
 
       assert %{1 => t1, 2 => t2} = ClusteredLevelGraph.level_cluster_trees(clg)
-      assert Graph.vertices(t1) == [1, 2, :a, :b]
-      assert Graph.vertices(t2) == [3, 4, :a, :b, :c]
+      assert Graph.vertices(t1) ||| [1, 2, :a, :b]
+      assert Graph.vertices(t2) ||| [3, 4, :a, :b, :c]
 
       assert %{1 => t1, 2 => t2} = ClusteredLevelGraph.level_cluster_trees(clg, contracted: true)
-      assert Graph.vertices(t1) == [1, 2, :a]
-      assert Graph.vertices(t2) == [3, 4, :c]
+      assert Graph.vertices(t1) ||| [1, 2, :a]
+      assert Graph.vertices(t2) ||| [3, 4, :c]
     end
 
     @tag edges: [{4, :i}]
@@ -51,7 +51,7 @@ defmodule Graph.ClusteredLevelGraphTest do
         |> Traversal.reaching_subgraph([:i])
         |> ClusterTree.contracted()
 
-      assert Graph.vertices(sg) == [:i]
+      assert Graph.vertices(sg) ||| [:i]
     end
 
     @tag edges: [{11, 21}, {12, 22}, {13, 21}, {14, 23}]
@@ -79,42 +79,44 @@ defmodule Graph.ClusteredLevelGraphTest do
         end
       )
 
-      assert Graph.source_vertices(g) == [
-               11,
-               12,
-               13,
-               14,
-               {:l, :a, 1},
-               {:l, :b, 1},
-               {:l, :c, 1},
-               {:l, :d, 1},
-               {:l, :e, 2},
-               {:l, :root, 1},
-               {:r, :a, 1},
-               {:r, :b, 1},
-               {:r, :c, 1},
-               {:r, :d, 1},
-               {:r, :e, 2},
-               {:r, :root, 1}
-             ]
+      assert Graph.source_vertices(g) |||
+               [
+                 11,
+                 12,
+                 13,
+                 14,
+                 {:l, :a, 1},
+                 {:l, :b, 1},
+                 {:l, :c, 1},
+                 {:l, :d, 1},
+                 {:l, :e, 2},
+                 {:l, :root, 1},
+                 {:r, :a, 1},
+                 {:r, :b, 1},
+                 {:r, :c, 1},
+                 {:r, :d, 1},
+                 {:r, :e, 2},
+                 {:r, :root, 1}
+               ]
 
-      assert Graph.sink_vertices(g) == [
-               21,
-               22,
-               23,
-               {:l, :a, 2},
-               {:l, :b, 1},
-               {:l, :c, 1},
-               {:l, :d, 2},
-               {:l, :e, 2},
-               {:l, :root, 2},
-               {:r, :a, 2},
-               {:r, :b, 1},
-               {:r, :c, 1},
-               {:r, :d, 2},
-               {:r, :e, 2},
-               {:r, :root, 2}
-             ]
+      assert Graph.sink_vertices(g) |||
+               [
+                 21,
+                 22,
+                 23,
+                 {:l, :a, 2},
+                 {:l, :b, 1},
+                 {:l, :c, 1},
+                 {:l, :d, 2},
+                 {:l, :e, 2},
+                 {:l, :root, 2},
+                 {:r, :a, 2},
+                 {:r, :b, 1},
+                 {:r, :c, 1},
+                 {:r, :d, 2},
+                 {:r, :e, 2},
+                 {:r, :root, 2}
+               ]
     end
 
     @tag edges: [{1, 2}, {2, 3}, {3, 4}]
@@ -124,14 +126,14 @@ defmodule Graph.ClusteredLevelGraphTest do
       clg = ClusteredLevelGraph.new(lg, t)
 
       assert %{g: %{g: g}, t: t} = ClusteredLevelGraph.subgraph(clg, [1, 2])
-      assert Graph.vertices(g) == [1, 2]
-      assert Graph.get_edges(g, fn {_, {v1, v2, _}} -> {v1, v2} end) == [{1, 2}]
-      assert Graph.vertices(t) == [1, 2, :a, :a1, :a2, :root]
+      assert Graph.vertices(g) ||| [1, 2]
+      assert Graph.get_edges(g, fn {_, {v1, v2, _}} -> {v1, v2} end) ||| [{1, 2}]
+      assert Graph.vertices(t) ||| [1, 2, :a, :a1, :a2, :root]
 
       assert %{g: %{g: g}, t: t} = ClusteredLevelGraph.subgraph(clg, [2, 3])
-      assert Graph.vertices(g) == [2, 3]
-      assert Graph.get_edges(g, fn {_, {v1, v2, _}} -> {v1, v2} end) == [{2, 3}]
-      assert Graph.vertices(t) == [2, 3, :a, :a2, :b, :b1, :root]
+      assert Graph.vertices(g) ||| [2, 3]
+      assert Graph.get_edges(g, fn {_, {v1, v2, _}} -> {v1, v2} end) ||| [{2, 3}]
+      assert Graph.vertices(t) ||| [2, 3, :a, :a2, :b, :b1, :root]
     end
   end
 end

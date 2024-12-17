@@ -23,8 +23,8 @@ defmodule Graph.MixProject do
   def project do
     [
       app: :graph,
-      version: "1.3.0",
-      elixir: "~> 1.12",
+      version: "1.4.0",
+      elixir: "~> 1.17",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -59,10 +59,10 @@ defmodule Graph.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
-      {:ex_doc, "~> 0.21", only: :dev, runtime: false},
-      {:jason, "~> 1.0"}
+      {:credo, "~> 1.7.10", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4.5", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.35.1", only: :dev, runtime: false},
+      {:jason, "~> 1.4.4"}
     ]
   end
 end
