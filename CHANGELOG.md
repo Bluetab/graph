@@ -1,10 +1,16 @@
 # Changelog
 
-## [Unreleased]
+## [1.4.0] 2024-12-17
 
 ### Changed
 
 - [TD-6911] Bump to Elixir 1.17 and updated dependencies
+  - The following public functions were renamed to comply with credo standards:
+    - Graph.is_tree/1 -> Graph.tree?/1
+    - Graph.is_arborescence/1 -> Graph.arborescence?/1
+    - Graph.is_acyclic?/1 -> Graph.acyclic?/1
+    - Graph.ClusteredLevelGraph.is_proper?/1 -> Graph.ClusteredLevelGraph.proper?/1
+    - Graph.LevelGraph.is_proper?/1 -> Graph.LevelGraph.proper?/1
 
 ## [1.3.0] 2022-10-26
 
