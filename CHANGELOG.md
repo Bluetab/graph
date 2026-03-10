@@ -1,5 +1,11 @@
 # Changelog
 
+## [8.3.0] 2026-03-10
+
+### Changed
+
+- [TD-7718] Base module name from `Graph` to `Bluetab.Graph` to resolve conflict with :lib_graph
+
 ## [1.4.0] 2024-12-17
 
 ### Changed
