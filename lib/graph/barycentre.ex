@@ -1,10 +1,10 @@
-defmodule Graph.Barycentre do
+defmodule Bluetab.Graph.Barycentre do
   @moduledoc """
   The barycentre measure of a vertex is calculated as the average "position" of
   it's predecessors in the graph.
   """
 
-  alias Graph.Vertex
+  alias Bluetab.Graph.Vertex
 
   @doc """
   Returns a function which takes a vertex and returns it's barycentre in the
@@ -12,10 +12,11 @@ defmodule Graph.Barycentre do
   position in a layer. The `pos_fn` function may be used to specify an different
   criteria.
   """
-  @spec b(Graph.t(), (Graph.t(), Vertex.id() -> pos_integer)) :: (Vertex.id() -> float)
-  def b(%Graph{} = g, pos_fn \\ &default_position_fn/2) do
+  @spec b(Bluetab.Graph.t(), (Bluetab.Graph.t(), Vertex.id() -> pos_integer)) :: (Vertex.id() ->
+                                                                                    float)
+  def b(%Bluetab.Graph{} = g, pos_fn \\ &default_position_fn/2) do
     fn v ->
-      case Graph.in_degree(g, v) do
+      case Bluetab.Graph.in_degree(g, v) do
         0 ->
           # Logger.debug("Vertex #{inspect(v)} has degree 0")
           pos_fn.(g, v)
@@ -23,7 +24,7 @@ defmodule Graph.Barycentre do
         d when is_integer(d) ->
           b =
             g
-            |> Graph.in_neighbours(v)
+            |> Bluetab.Graph.in_neighbours(v)
             |> Enum.map(&pos_fn.(g, &1))
             |> Enum.sum()
 
@@ -32,8 +33,8 @@ defmodule Graph.Barycentre do
     end
   end
 
-  defp default_position_fn(%Graph{} = g, v) do
-    case Graph.vertex(g, v, :b) do
+  defp default_position_fn(%Bluetab.Graph{} = g, v) do
+    case Bluetab.Graph.vertex(g, v, :b) do
       nil -> :rand.uniform(50)
       b -> b
     end

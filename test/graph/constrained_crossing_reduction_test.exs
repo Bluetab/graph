@@ -1,9 +1,9 @@
-defmodule Graph.ConstrainedCrossingReductionTest do
-  use GraphCase
+defmodule Bluetab.Graph.ConstrainedCrossingReductionTest do
+  use Bluetab.GraphCase
 
-  alias Graph.ConstrainedCrossingReduction
-  alias Graph.ConstraintGraph
-  alias Graph.LevelGraph
+  alias Bluetab.Graph.ConstrainedCrossingReduction
+  alias Bluetab.Graph.ConstraintGraph
+  alias Bluetab.Graph.LevelGraph
 
   @order [{:l, :c2}, 1, 2, {:r, :c2}, 3, {:l, :c1}, {:l, :c3}, 4, 5, {:r, :c3}, {:r, :c1}]
 
@@ -17,7 +17,7 @@ defmodule Graph.ConstrainedCrossingReductionTest do
     end
   end
 
-  describe "Graph.ConstrainedCrossingReduction" do
+  describe "Bluetab.Graph.ConstrainedCrossingReduction" do
     @tag vertices: @order |> Enum.with_index(1) |> Map.new(fn {v, b} -> {v, %{b: b}} end)
     @tag edges: [
            # {1, :c2},

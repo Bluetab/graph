@@ -1,25 +1,25 @@
-defmodule Graph.CrossingReduction do
+defmodule Bluetab.Graph.CrossingReduction do
   @moduledoc """
   Implementation of clustered crossing reduction.
   """
 
-  alias Graph.ClusteredLevelGraph
-  alias Graph.ClusterTree
-  alias Graph.ConstrainedCrossingReduction
-  alias Graph.ConstraintGraph
-  alias Graph.CrossingReductionGraph
-  alias Graph.LevelGraph
-  alias Graph.NestingGraph
-  alias Graph.Traversal
+  alias Bluetab.Graph.ClusteredLevelGraph
+  alias Bluetab.Graph.ClusterTree
+  alias Bluetab.Graph.ConstrainedCrossingReduction
+  alias Bluetab.Graph.ConstraintGraph
+  alias Bluetab.Graph.CrossingReductionGraph
+  alias Bluetab.Graph.LevelGraph
+  alias Bluetab.Graph.NestingGraph
+  alias Bluetab.Graph.Traversal
 
   require Logger
 
-  @type vertex :: Graph.Vertex.id()
+  @type vertex :: Bluetab.Graph.Vertex.id()
   @type direction :: :down | :up
   @type permutation :: [vertex]
 
   @typep edge :: {vertex, vertex}
-  @typep constraint_map :: %{vertex: Graph.t()}
+  @typep constraint_map :: %{vertex: Bluetab.Graph.t()}
   @typep crossing_reduction_map :: %{vertex: CrossingReductionGraph.t()}
 
   @spec crossing_reduction_graphs(ClusteredLevelGraph.t(), direction) :: crossing_reduction_map
@@ -33,7 +33,7 @@ defmodule Graph.CrossingReduction do
 
     t1
     |> ClusterTree.leaves()
-    |> Enum.map(&{&1, %{b: Graph.vertex(g, &1, :b), r: 1}})
+    |> Enum.map(&{&1, %{b: Bluetab.Graph.vertex(g, &1, :b), r: 1}})
     |> do_crossing_reduction_graphs(clg, t2, direction, constraints)
   end
 
@@ -65,33 +65,33 @@ defmodule Graph.CrossingReduction do
     end)
   end
 
-  @spec constraints(ClusteredLevelGraph.t(), Graph.t()) :: constraint_map
-  defp constraints(%ClusteredLevelGraph{g: %{g: g}, t: t} = clg, %Graph{} = t1) do
+  @spec constraints(ClusteredLevelGraph.t(), Bluetab.Graph.t()) :: constraint_map
+  defp constraints(%ClusteredLevelGraph{g: %{g: g}, t: t} = clg, %Bluetab.Graph{} = t1) do
     t
     |> ClusterTree.clusters()
     |> Enum.group_by(&ClusteredLevelGraph.levels(clg, &1))
     |> Enum.filter(fn {span, _} -> MapSet.size(span) > 1 end)
     |> Enum.flat_map(fn {_, cs} -> cs end)
-    |> Enum.group_by(&Graph.in_neighbours(t, &1))
+    |> Enum.group_by(&Bluetab.Graph.in_neighbours(t, &1))
     |> Enum.reject(fn {parents, children} -> parents == [] or Enum.count(children) < 2 end)
     |> Enum.map(fn {[parent], children} -> {parent, children} end)
     |> Map.new(fn {parent, children} -> {parent, constraint_graph(children, t1, g)} end)
   end
 
-  @spec constraint_graph([vertex], Graph.t(), Graph.t()) :: Graph.t()
-  defp constraint_graph(cs, %Graph{} = t1, %Graph{} = g) do
+  @spec constraint_graph([vertex], Bluetab.Graph.t(), Bluetab.Graph.t()) :: Bluetab.Graph.t()
+  defp constraint_graph(cs, %Bluetab.Graph{} = t1, %Bluetab.Graph{} = g) do
     cs
     |> Enum.sort_by(&order(t1, g, &1))
     |> Enum.chunk_every(2, 1, :discard)
     |> ConstraintGraph.new()
   end
 
-  @spec order(Graph.t(), Graph.t(), vertex) :: float
-  defp order(%Graph{} = t1, %Graph{} = g, c) do
+  @spec order(Bluetab.Graph.t(), Bluetab.Graph.t(), vertex) :: float
+  defp order(%Bluetab.Graph{} = t1, %Bluetab.Graph{} = g, c) do
     [c]
     |> Traversal.reachable(t1)
-    |> Enum.filter(&(Graph.out_degree(t1, &1) == 0))
-    |> Enum.map(&Graph.vertex_label(g, &1))
+    |> Enum.filter(&(Bluetab.Graph.out_degree(t1, &1) == 0))
+    |> Enum.map(&Bluetab.Graph.vertex_label(g, &1))
     |> Enum.map(&Map.get(&1, :b))
     |> Enum.reduce({0, 0}, fn b, {sum, count} -> {sum + b, count + 1} end)
     |> then(fn {sum, count} -> sum / count end)
@@ -100,14 +100,14 @@ defmodule Graph.CrossingReduction do
   @spec do_crossing_reduction_graphs(
           permutation,
           ClusteredLevelGraph.t(),
-          Graph.t(),
+          Bluetab.Graph.t(),
           direction,
           constraint_map
         ) :: crossing_reduction_map
   defp do_crossing_reduction_graphs(
          v1s,
          %ClusteredLevelGraph{g: %{g: g}},
-         %Graph{} = t2,
+         %Bluetab.Graph{} = t2,
          direction,
          constraints
        ) do
@@ -115,21 +115,29 @@ defmodule Graph.CrossingReduction do
 
     t2
     |> ClusterTree.clusters()
-    |> Enum.map(fn c -> {c, Map.get(edge_map, c, []), Map.get(constraints, c, Graph.new())} end)
+    |> Enum.map(fn c ->
+      {c, Map.get(edge_map, c, []), Map.get(constraints, c, Bluetab.Graph.new())}
+    end)
     |> Enum.map(fn {c, edges, constraints} ->
       {c, crossing_reduction_graph(t2, c, v1s, edges, constraints)}
     end)
     |> Map.new()
   end
 
-  @spec crossing_reduction_graph(Graph.t(), vertex, permutation, [edge], Graph.t()) ::
+  @spec crossing_reduction_graph(
+          Bluetab.Graph.t(),
+          vertex,
+          permutation,
+          [edge],
+          Bluetab.Graph.t()
+        ) ::
           CrossingReductionGraph.t()
   defp crossing_reduction_graph(t2, c, v1s, edges, constraints) do
     edges
     |> Enum.reduce(cluster_subgraph(t2, c, v1s), fn {v1, v2}, acc ->
-      Graph.add_edge(acc, v1, v2)
+      Bluetab.Graph.add_edge(acc, v1, v2)
     end)
-    |> LevelGraph.new(fn g, v -> Graph.vertex(g, v, :r) end)
+    |> LevelGraph.new(fn g, v -> Bluetab.Graph.vertex(g, v, :r) end)
     |> CrossingReductionGraph.new(constraints)
   end
 
@@ -137,18 +145,18 @@ defmodule Graph.CrossingReduction do
   defp sorter(:down), do: &<=/2
   defp sorter(:up), do: &>=/2
 
-  @spec edge_transfer_map(Graph.t(), Graph.t(), direction) :: %{vertex: [vertex]}
-  defp edge_transfer_map(%Graph{} = g, %Graph{} = t2, direction) do
-    case Graph.source_vertices(t2) do
+  @spec edge_transfer_map(Bluetab.Graph.t(), Bluetab.Graph.t(), direction) :: %{vertex: [vertex]}
+  defp edge_transfer_map(%Bluetab.Graph{} = g, %Bluetab.Graph{} = t2, direction) do
+    case Bluetab.Graph.source_vertices(t2) do
       [root] ->
         g
-        |> Graph.get_edges(edge_fn(direction))
+        |> Bluetab.Graph.get_edges(edge_fn(direction))
         |> Enum.flat_map(fn {w1, w2} -> transfer_edges(w1, w2, root, t2) end)
         |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
     end
   end
 
-  @spec transfer_edges(vertex, vertex, vertex, Graph.t()) :: [
+  @spec transfer_edges(vertex, vertex, vertex, Bluetab.Graph.t()) :: [
           {vertex, {vertex, vertex}}
         ]
   defp transfer_edges(w1, w2, root, t2) do
@@ -161,24 +169,25 @@ defmodule Graph.CrossingReduction do
   defp edge_fn(:down), do: fn {_, {w1, w2, _}} -> {w1, w2} end
   defp edge_fn(:up), do: fn {_, {w1, w2, _}} -> {w2, w1} end
 
-  defp cluster_subgraph(%Graph{} = t2, c, v1s) do
+  defp cluster_subgraph(%Bluetab.Graph{} = t2, c, v1s) do
     t2
-    |> Graph.out_neighbours(c)
+    |> Bluetab.Graph.out_neighbours(c)
     |> Enum.map(&{&1, %{r: 2}})
     |> Enum.concat(v1s)
     |> Map.new()
-    |> Graph.new()
+    |> Bluetab.Graph.new()
   end
 
   defp path_pairs(t2, root, v2) do
     t2
-    |> Graph.get_path(root, v2)
+    |> Bluetab.Graph.get_path(root, v2)
     |> Enum.chunk_every(2, 1, :discard)
   end
 
-  @spec clustered_crossing_reduction(Graph.t(), Graph.t()) :: ClusteredLevelGraph.t()
-  def clustered_crossing_reduction(%Graph{} = g, %Graph{} = t) do
-    case Graph.source_vertices(t) do
+  @spec clustered_crossing_reduction(Bluetab.Graph.t(), Bluetab.Graph.t()) ::
+          ClusteredLevelGraph.t()
+  def clustered_crossing_reduction(%Bluetab.Graph{} = g, %Bluetab.Graph{} = t) do
+    case Bluetab.Graph.source_vertices(t) do
       [root] ->
         g
         |> normalize(t)
@@ -188,13 +197,13 @@ defmodule Graph.CrossingReduction do
 
   @spec clustered_crossing_reduction(ClusteredLevelGraph.t()) :: ClusteredLevelGraph.t()
   def clustered_crossing_reduction(%ClusteredLevelGraph{t: t} = clg) do
-    case Graph.source_vertices(t) do
+    case Bluetab.Graph.source_vertices(t) do
       [root] -> reduce_crossings(clg, root)
     end
   end
 
-  @spec normalize(Graph.t(), Graph.t()) :: ClusteredLevelGraph.t()
-  def normalize(%Graph{} = g, %Graph{} = t) do
+  @spec normalize(Bluetab.Graph.t(), Bluetab.Graph.t()) :: ClusteredLevelGraph.t()
+  def normalize(%Bluetab.Graph{} = g, %Bluetab.Graph{} = t) do
     g
     |> NestingGraph.new(t)
     |> normalize()

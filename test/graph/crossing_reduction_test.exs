@@ -1,9 +1,9 @@
-defmodule Graph.CrossingReductionTest do
-  use GraphCase
+defmodule Bluetab.Graph.CrossingReductionTest do
+  use Bluetab.GraphCase
   use TreeCase
 
-  alias Graph.ClusteredLevelGraph
-  alias Graph.CrossingReduction
+  alias Bluetab.Graph.ClusteredLevelGraph
+  alias Bluetab.Graph.CrossingReduction
 
   @vertices [
               :grouped_sales,
@@ -87,7 +87,7 @@ defmodule Graph.CrossingReductionTest do
     ]
   ]
 
-  describe "Graph.CrossingReduction" do
+  describe "Bluetab.Graph.CrossingReduction" do
     @tag vertices: @vertices
     @tag edges: @edges
     @tag tree: @tree

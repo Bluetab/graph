@@ -1,12 +1,12 @@
-defmodule Graph.ClusterTreeTest do
-  use GraphCase
+defmodule Bluetab.Graph.ClusterTreeTest do
+  use Bluetab.GraphCase
 
-  alias Graph.ClusterTree
-  alias Graph.Traversal
+  alias Bluetab.Graph.ClusterTree
+  alias Bluetab.Graph.Traversal
 
-  doctest Graph.ClusterTree
+  doctest Bluetab.Graph.ClusterTree
 
-  describe "Graph.ClusterTree" do
+  describe "Bluetab.Graph.ClusterTree" do
     @tag vertices: [:a, :b, :c, 1, 2, 3, 4]
     @tag edges: [a: 1, a: :b, b: 2, b: :c, c: 3, c: 4]
     test "contracted/1 returns a contracted level cluster tree", %{g: t} do
@@ -15,8 +15,8 @@ defmodule Graph.ClusterTreeTest do
                |> Enum.map(&Traversal.reaching_subgraph(t, &1))
                |> Enum.map(&ClusterTree.contracted/1)
 
-      assert Graph.vertices(t1) ||| [1, 2, :a]
-      assert Graph.vertices(t2) ||| [3, 4, :c]
+      assert Bluetab.Graph.vertices(t1) ||| [1, 2, :a]
+      assert Bluetab.Graph.vertices(t2) ||| [3, 4, :c]
       assert edges(t1) ||| [a: 1, a: 2]
       assert edges(t2) ||| [c: 3, c: 4]
     end

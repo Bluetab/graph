@@ -1,11 +1,11 @@
-defmodule Graph.Drawing.Grid do
+defmodule Bluetab.Graph.Drawing.Grid do
   @moduledoc """
   Support for creating grid-based graph drawings.
   """
 
-  alias Graph.Drawing.Dimensions
-  alias Graph.Layout
-  alias Graph.LevelGraph
+  alias Bluetab.Graph.Drawing.Dimensions
+  alias Bluetab.Graph.Layout
+  alias Bluetab.Graph.LevelGraph
 
   defstruct x_scale: %{}, y_scale: %{}
 
@@ -22,7 +22,7 @@ defmodule Graph.Drawing.Grid do
   def new(%LevelGraph{g: g} = lg, width_fn, height_fn, opts \\ []) do
     y_scale =
       g
-      |> Graph.vertices()
+      |> Bluetab.Graph.vertices()
       |> Enum.group_by(y_pos(g, opts[:y_label]), height_fn)
       |> Enum.map(fn {y, vs} -> {y, Enum.max(vs)} end)
       |> Enum.sort()
@@ -75,8 +75,8 @@ defmodule Graph.Drawing.Grid do
     Keyword.get(opts, :y_spacing, @default_y_spacing)
   end
 
-  defp y_pos(%Graph{} = g, nil), do: y_pos(g, :x)
-  defp y_pos(%Graph{} = g, label), do: &Graph.vertex(g, &1, label)
+  defp y_pos(%Bluetab.Graph{} = g, nil), do: y_pos(g, :x)
+  defp y_pos(%Bluetab.Graph{} = g, label), do: &Bluetab.Graph.vertex(g, &1, label)
 
   defp accumulate_height({y, h}, [], _), do: [{y, h, 0, h}]
 

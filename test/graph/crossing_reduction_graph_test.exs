@@ -1,10 +1,10 @@
-defmodule Graph.CrossingReductionGraphTest do
-  use GraphCase
+defmodule Bluetab.Graph.CrossingReductionGraphTest do
+  use Bluetab.GraphCase
   use TreeCase
 
-  alias Graph.ClusteredLevelGraph
-  alias Graph.CrossingReduction
-  alias Graph.LevelGraph
+  alias Bluetab.Graph.ClusteredLevelGraph
+  alias Bluetab.Graph.CrossingReduction
+  alias Bluetab.Graph.LevelGraph
 
   @vertices [[1, 2, 3, 4, 5], [:a, :b, :c, :d, :e, :f, :g, :h, :i, :j]]
             |> Enum.flat_map(&Enum.with_index(&1, 1))
@@ -27,7 +27,7 @@ defmodule Graph.CrossingReductionGraphTest do
   ]
   @tree [c1: [3, :e, :f, c2: [1, 2, :c, :d, c4: [:a, :b]], c3: [4, :g, :h, :j, c5: [5, :i]]]]
 
-  describe "Graph.CrossingReductionGraph" do
+  describe "Bluetab.Graph.CrossingReductionGraph" do
     @tag vertices: @vertices
     @tag edges: @edges
     @tag tree: @tree

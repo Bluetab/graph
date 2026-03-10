@@ -1,4 +1,4 @@
-defmodule Graph.Drawing.Dimensions do
+defmodule Bluetab.Graph.Drawing.Dimensions do
   @moduledoc """
   Module to calculate dimensions of nodes in a graph drawing.
   """

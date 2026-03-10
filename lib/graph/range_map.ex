@@ -1,4 +1,4 @@
-defmodule Graph.RangeMap do
+defmodule Bluetab.Graph.RangeMap do
   @moduledoc """
   This module implements a counting accumulator for ranges which can be used in
   a greedy algorithm for the hitting set problem (i.e. returning a set of elements
@@ -105,7 +105,7 @@ defmodule Graph.RangeMap do
   defimpl Inspect do
     import Inspect.Algebra
 
-    def inspect(%Graph.RangeMap{ranges: rs}, opts) do
+    def inspect(%Bluetab.Graph.RangeMap{ranges: rs}, opts) do
       opts = %Inspect.Opts{opts | charlists: :as_lists}
       concat(["#RangeMap<", Inspect.List.inspect(MapSet.to_list(rs), opts), ">"])
     end

@@ -1,31 +1,31 @@
-defmodule Graph.LevelGraph do
+defmodule Bluetab.Graph.LevelGraph do
   @moduledoc """
   **Forster (2005):**
-  > **(Level Graph)**: A k-**level graph** $G = (V, E, Phi)$ is a graph $(V, E)$
+  > **(Level Bluetab.Graph)**: A k-**level graph** $G = (V, E, Phi)$ is a graph $(V, E)$
   > with a **leveling** $Phi: V -> {1,...,k}$ that partitions the vertex set
   > into k disjoint levels $V_1, ..., V_k, V_i = Phi^(−1)(i)$, such that each
   > edge $(u, v) in E$ has a positive **span** $Phi(v) − Phi(u) > 0$, i.e., all
   > edges point downwards. Edges are called **proper** if their span is 1 and
   > **long span** edges otherwise. $G$ is proper if all its edges are proper.
   """
-  alias Graph.Edge
-  alias Graph.Vertex
+  alias Bluetab.Graph.Edge
+  alias Bluetab.Graph.Vertex
 
-  defstruct g: %Graph{}, phi: &__MODULE__.default_level_fn/2
+  defstruct g: %Bluetab.Graph{}, phi: &__MODULE__.default_level_fn/2
 
-  @type t :: %__MODULE__{g: Graph.t(), phi: level_fn}
+  @type t :: %__MODULE__{g: Bluetab.Graph.t(), phi: level_fn}
   @type vertex :: Vertex.id()
   @type level :: pos_integer
-  @type level_fn :: (Graph.t(), vertex -> level | {:error, :bad_vertex})
+  @type level_fn :: (Bluetab.Graph.t(), vertex -> level | {:error, :bad_vertex})
   @type direction :: :left | :right
 
-  @spec new(Graph.t()) :: t
+  @spec new(Bluetab.Graph.t()) :: t
   def new(g), do: %__MODULE__{g: g}
 
-  @spec new(Graph.t(), level_fn) :: t
+  @spec new(Bluetab.Graph.t(), level_fn) :: t
   def new(g, phi) when is_function(phi), do: %__MODULE__{g: g, phi: phi}
 
-  @spec new(Graph.t(), atom) :: t
+  @spec new(Bluetab.Graph.t(), atom) :: t
   def new(g, label) when is_atom(label) do
     case phi(label) do
       phi when is_function(phi) -> new(g, phi)
@@ -33,7 +33,7 @@ defmodule Graph.LevelGraph do
   end
 
   @spec phi(atom) :: level_fn
-  def phi(label) when is_atom(label), do: fn g, v -> Graph.vertex(g, v, label) end
+  def phi(label) when is_atom(label), do: fn g, v -> Bluetab.Graph.vertex(g, v, label) end
 
   @spec subgraph(t, [level]) :: t
   def subgraph(%__MODULE__{g: g} = lg, levels) do
@@ -44,19 +44,19 @@ defmodule Graph.LevelGraph do
       |> Map.values()
       |> Enum.flat_map(& &1)
 
-    %{lg | g: Graph.subgraph(g, vs)}
+    %{lg | g: Bluetab.Graph.subgraph(g, vs)}
   end
 
   @spec proper?(t) :: boolean
   def proper?(%__MODULE__{g: g} = lg) do
     g
-    |> Graph.edges()
+    |> Bluetab.Graph.edges()
     |> Enum.all?(&(span(lg, &1) == 1))
   end
 
   @spec level(t, vertex) :: level | {:error, :bad_vertex}
   def level(%__MODULE__{g: g, phi: phi}, vertex_id) do
-    case Graph.vertex(g, vertex_id) do
+    case Bluetab.Graph.vertex(g, vertex_id) do
       nil -> {:error, :bad_vertex}
       _v -> phi.(g, vertex_id)
     end
@@ -75,14 +75,14 @@ defmodule Graph.LevelGraph do
   end
 
   def span(%__MODULE__{g: g} = lg, edge_id) do
-    case Graph.edge(g, edge_id) do
+    case Bluetab.Graph.edge(g, edge_id) do
       nil -> {:error, :bad_edge}
       e -> span(lg, e)
     end
   end
 
-  def default_level_fn(%Graph{} = g, v) do
-    case Graph.in_degree(g, v) do
+  def default_level_fn(%Bluetab.Graph{} = g, v) do
+    case Bluetab.Graph.in_degree(g, v) do
       0 -> 1
       _ -> 2
     end
@@ -95,8 +95,8 @@ defmodule Graph.LevelGraph do
   @spec vertices_by_level(t) :: %{level: [vertex]}
   def vertices_by_level(%__MODULE__{g: g} = lg) do
     g
-    |> Graph.vertices()
-    |> Enum.sort_by(&Graph.vertex(g, &1, :b))
+    |> Bluetab.Graph.vertices()
+    |> Enum.sort_by(&Bluetab.Graph.vertex(g, &1, :b))
     |> Enum.group_by(&level(lg, &1))
   end
 
@@ -117,7 +117,7 @@ defmodule Graph.LevelGraph do
   @spec vertices_by_level(t, level) :: [vertex]
   def vertices_by_level(%__MODULE__{g: g} = lg, level) do
     g
-    |> Graph.vertices()
+    |> Bluetab.Graph.vertices()
     |> Enum.filter(&(level(lg, &1) == level))
   end
 
@@ -127,7 +127,7 @@ defmodule Graph.LevelGraph do
   @spec long_span_edges(t) :: [Edge.t()]
   def long_span_edges(%__MODULE__{g: g} = lg) do
     g
-    |> Graph.get_edges()
+    |> Bluetab.Graph.get_edges()
     |> Enum.filter(&(span(lg, &1) > 1))
   end
 
@@ -141,7 +141,7 @@ defmodule Graph.LevelGraph do
       lg
       |> vertices_by_level()
       |> Enum.flat_map(fn {_, vs} -> Enum.with_index(vs, 1) end)
-      |> Enum.reduce(g, fn {v, b}, acc -> Graph.put_label(acc, v, %{label => b}) end)
+      |> Enum.reduce(g, fn {v, b}, acc -> Bluetab.Graph.put_label(acc, v, %{label => b}) end)
 
     %{lg | g: g}
   end
@@ -151,7 +151,7 @@ defmodule Graph.LevelGraph do
   """
   @spec put_label(t, vertex, Enumerable.t()) :: t
   def put_label(%__MODULE__{g: g} = lg, v, labels) do
-    %{lg | g: Graph.put_label(g, v, labels)}
+    %{lg | g: Bluetab.Graph.put_label(g, v, labels)}
   end
 
   @doc """
@@ -159,7 +159,7 @@ defmodule Graph.LevelGraph do
   """
   @spec cross_count(t) :: non_neg_integer
   def cross_count(%__MODULE__{g: g} = lg) do
-    alias Graph.CrossCount
+    alias Bluetab.Graph.CrossCount
 
     lg
     |> vertices_by_level()
@@ -167,14 +167,14 @@ defmodule Graph.LevelGraph do
     |> Enum.sort()
     |> Enum.chunk_every(2, 1, :discard)
     |> Enum.map(&subgraph(lg, &1))
-    |> Enum.map(&CrossCount.bilayer_cross_count(&1.g, fn v -> Graph.vertex(g, v, :b) end))
+    |> Enum.map(&CrossCount.bilayer_cross_count(&1.g, fn v -> Bluetab.Graph.vertex(g, v, :b) end))
     |> Enum.sum()
   end
 
   defimpl Inspect do
     import Inspect.Algebra
 
-    alias Graph.LevelGraph
+    alias Bluetab.Graph.LevelGraph
 
     def inspect(%LevelGraph{} = lg, opts) do
       opts = %Inspect.Opts{opts | charlists: :as_lists}

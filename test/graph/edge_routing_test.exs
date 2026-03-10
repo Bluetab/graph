@@ -1,11 +1,11 @@
-defmodule Graph.EdgeRoutingTest do
-  use GraphCase
+defmodule Bluetab.Graph.EdgeRoutingTest do
+  use Bluetab.GraphCase
   use TreeCase
 
-  alias Graph.ClusteredLevelGraph
-  alias Graph.EdgeRouting
-  alias Graph.LevelGraph
-  alias Graph.NestingGraph
+  alias Bluetab.Graph.ClusteredLevelGraph
+  alias Bluetab.Graph.EdgeRouting
+  alias Bluetab.Graph.LevelGraph
+  alias Bluetab.Graph.NestingGraph
 
   @vertices [:root, :a, :b, :a1, :a2, :b1, :b2, 1, 2, 3, 4]
   @edges [{1, 2}, {2, 3}, {3, 4}, {1, 4}]

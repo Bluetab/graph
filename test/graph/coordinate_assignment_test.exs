@@ -1,8 +1,8 @@
-defmodule Graph.CoordinateAssignmentTest do
-  use GraphCase
+defmodule Bluetab.Graph.CoordinateAssignmentTest do
+  use Bluetab.GraphCase
 
-  alias Graph.CoordinateAssignment
-  alias Graph.LevelGraph
+  alias Bluetab.Graph.CoordinateAssignment
+  alias Bluetab.Graph.LevelGraph
 
   @levels [
     [11, 12],
@@ -36,7 +36,7 @@ defmodule Graph.CoordinateAssignmentTest do
         lg =
           Enum.reduce(
             dummies,
-            LevelGraph.new(g, fn g, v -> Graph.vertex(g, v, :r) end),
+            LevelGraph.new(g, fn g, v -> Bluetab.Graph.vertex(g, v, :r) end),
             &LevelGraph.put_label(&2, &1, %{dummy: true})
           )
 
@@ -47,7 +47,7 @@ defmodule Graph.CoordinateAssignmentTest do
     end
   end
 
-  describe "Graph.CoordinateAssignment" do
+  describe "Bluetab.Graph.CoordinateAssignment" do
     @tag vertices: @vertices
     @tag edges: @edges
     @tag dummies: @dummies
@@ -95,8 +95,8 @@ defmodule Graph.CoordinateAssignmentTest do
       assert %LevelGraph{g: g} = CoordinateAssignment.assign_x(lg)
 
       assert g
-             |> Graph.vertices()
-             |> Enum.group_by(&Graph.vertex(g, &1, :x)) ==
+             |> Bluetab.Graph.vertices()
+             |> Enum.group_by(&Bluetab.Graph.vertex(g, &1, :x)) ==
                %{
                  0 => [11, 21],
                  2 => [22, 31, 41, 51],
@@ -117,8 +117,8 @@ defmodule Graph.CoordinateAssignmentTest do
       assert %LevelGraph{g: g} = CoordinateAssignment.assign_avg_x(lg)
 
       assert g
-             |> Graph.vertices()
-             |> Enum.group_by(&Graph.vertex(g, &1, :x)) ==
+             |> Bluetab.Graph.vertices()
+             |> Enum.group_by(&Bluetab.Graph.vertex(g, &1, :x)) ==
                %{
                  0.0 => [21],
                  2.0 => [22, 41, 51],

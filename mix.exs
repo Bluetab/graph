@@ -1,4 +1,4 @@
-defmodule Graph.MixProject do
+defmodule Bluetab.Graph.MixProject do
   use Mix.Project
 
   defp mathjax_resources(:html) do
@@ -23,14 +23,14 @@ defmodule Graph.MixProject do
   def project do
     [
       app: :graph,
-      version: "1.4.0",
+      version: "8.3.0",
       elixir: "~> 1.17",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
 
       # Docs
-      name: "Graph",
+      name: "Bluetab.Graph",
       source_url: "https://github.com/Bluetab/graph",
       homepage_url: "https://github.com/Bluetab/graph",
       docs: docs()
@@ -50,7 +50,7 @@ defmodule Graph.MixProject do
 
   defp docs do
     [
-      main: "Graph",
+      main: "Bluetab.Graph",
       extras: ["README.md"],
       before_closing_body_tag: &mathjax_resources/1
     ]

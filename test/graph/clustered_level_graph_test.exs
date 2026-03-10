@@ -1,13 +1,13 @@
-defmodule Graph.ClusteredLevelGraphTest do
-  use GraphCase
+defmodule Bluetab.Graph.ClusteredLevelGraphTest do
+  use Bluetab.GraphCase
   use TreeCase
 
-  alias Graph.ClusteredLevelGraph
-  alias Graph.ClusterTree
-  alias Graph.LevelGraph
-  alias Graph.Traversal
+  alias Bluetab.Graph.ClusteredLevelGraph
+  alias Bluetab.Graph.ClusterTree
+  alias Bluetab.Graph.LevelGraph
+  alias Bluetab.Graph.Traversal
 
-  describe "Graph.ClusteredLevelGraph" do
+  describe "Bluetab.Graph.ClusteredLevelGraph" do
     @tag edges: [{11, 21}, {12, 22}, {13, 21}, {14, 23}]
     @tag tree: [root: [a: [11, 21, b: [13, c: [14]]], d: [12, 22], e: [23]]]
     test "new/2 returns a new clustered level graph, clusters have span", %{g: g, t: t} do
@@ -32,12 +32,12 @@ defmodule Graph.ClusteredLevelGraphTest do
       assert clg = ClusteredLevelGraph.new(lg, t)
 
       assert %{1 => t1, 2 => t2} = ClusteredLevelGraph.level_cluster_trees(clg)
-      assert Graph.vertices(t1) ||| [1, 2, :a, :b]
-      assert Graph.vertices(t2) ||| [3, 4, :a, :b, :c]
+      assert Bluetab.Graph.vertices(t1) ||| [1, 2, :a, :b]
+      assert Bluetab.Graph.vertices(t2) ||| [3, 4, :a, :b, :c]
 
       assert %{1 => t1, 2 => t2} = ClusteredLevelGraph.level_cluster_trees(clg, contracted: true)
-      assert Graph.vertices(t1) ||| [1, 2, :a]
-      assert Graph.vertices(t2) ||| [3, 4, :c]
+      assert Bluetab.Graph.vertices(t1) ||| [1, 2, :a]
+      assert Bluetab.Graph.vertices(t2) ||| [3, 4, :c]
     end
 
     @tag edges: [{4, :i}]
@@ -51,7 +51,7 @@ defmodule Graph.ClusteredLevelGraphTest do
         |> Traversal.reaching_subgraph([:i])
         |> ClusterTree.contracted()
 
-      assert Graph.vertices(sg) ||| [:i]
+      assert Bluetab.Graph.vertices(sg) ||| [:i]
     end
 
     @tag edges: [{11, 21}, {12, 22}, {13, 21}, {14, 23}]
@@ -74,12 +74,12 @@ defmodule Graph.ClusteredLevelGraphTest do
           e: [{:l, :e, 2}, {:r, :e, 2}]
         },
         fn {v, ws} ->
-          out_neighbours = Graph.out_neighbours(t, v)
+          out_neighbours = Bluetab.Graph.out_neighbours(t, v)
           assert Enum.all?(ws, &Enum.member?(out_neighbours, &1))
         end
       )
 
-      assert Graph.source_vertices(g) |||
+      assert Bluetab.Graph.source_vertices(g) |||
                [
                  11,
                  12,
@@ -99,7 +99,7 @@ defmodule Graph.ClusteredLevelGraphTest do
                  {:r, :root, 1}
                ]
 
-      assert Graph.sink_vertices(g) |||
+      assert Bluetab.Graph.sink_vertices(g) |||
                [
                  21,
                  22,
@@ -126,14 +126,14 @@ defmodule Graph.ClusteredLevelGraphTest do
       clg = ClusteredLevelGraph.new(lg, t)
 
       assert %{g: %{g: g}, t: t} = ClusteredLevelGraph.subgraph(clg, [1, 2])
-      assert Graph.vertices(g) ||| [1, 2]
-      assert Graph.get_edges(g, fn {_, {v1, v2, _}} -> {v1, v2} end) ||| [{1, 2}]
-      assert Graph.vertices(t) ||| [1, 2, :a, :a1, :a2, :root]
+      assert Bluetab.Graph.vertices(g) ||| [1, 2]
+      assert Bluetab.Graph.get_edges(g, fn {_, {v1, v2, _}} -> {v1, v2} end) ||| [{1, 2}]
+      assert Bluetab.Graph.vertices(t) ||| [1, 2, :a, :a1, :a2, :root]
 
       assert %{g: %{g: g}, t: t} = ClusteredLevelGraph.subgraph(clg, [2, 3])
-      assert Graph.vertices(g) ||| [2, 3]
-      assert Graph.get_edges(g, fn {_, {v1, v2, _}} -> {v1, v2} end) ||| [{2, 3}]
-      assert Graph.vertices(t) ||| [2, 3, :a, :a2, :b, :b1, :root]
+      assert Bluetab.Graph.vertices(g) ||| [2, 3]
+      assert Bluetab.Graph.get_edges(g, fn {_, {v1, v2, _}} -> {v1, v2} end) ||| [{2, 3}]
+      assert Bluetab.Graph.vertices(t) ||| [2, 3, :a, :a2, :b, :b1, :root]
     end
   end
 end
