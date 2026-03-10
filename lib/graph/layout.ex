@@ -1,27 +1,27 @@
-defmodule Graph.Layout do
+defmodule Bluetab.Graph.Layout do
   @moduledoc """
-  Layout support for Clustered Level Graphs.
+  Layout support for Clustered Level Bluetab.Graphs.
   """
 
-  alias Graph.ClusteredLevelGraph
-  alias Graph.ClusterTree
-  alias Graph.CoordinateAssignment
-  alias Graph.CrossingReduction
-  alias Graph.LevelGraph
-  alias Graph.RankAssignment
+  alias Bluetab.Graph.ClusteredLevelGraph
+  alias Bluetab.Graph.ClusterTree
+  alias Bluetab.Graph.CoordinateAssignment
+  alias Bluetab.Graph.CrossingReduction
+  alias Bluetab.Graph.LevelGraph
+  alias Bluetab.Graph.RankAssignment
 
   defstruct graph: %ClusteredLevelGraph{}, ids: [], opts: []
 
   @type t :: %__MODULE__{graph: ClusteredLevelGraph.t(), ids: [vertex], opts: Keyword.t()}
-  @type vertex :: Graph.Vertex.id()
+  @type vertex :: Bluetab.Graph.Vertex.id()
 
   @spec new(ClusteredLevelGraph.t(), [vertex], Keyword.t()) :: t
   def new(%ClusteredLevelGraph{} = clg, ids, opts) do
     %__MODULE__{graph: clg, ids: ids, opts: opts}
   end
 
-  @spec layout(Graph.t(), Graph.t(), [vertex], Keyword.t()) :: t
-  def layout(%Graph{} = g, %Graph{} = t, ids, opts \\ []) do
+  @spec layout(Bluetab.Graph.t(), Bluetab.Graph.t(), [vertex], Keyword.t()) :: t
+  def layout(%Bluetab.Graph{} = g, %Bluetab.Graph{} = t, ids, opts \\ []) do
     g
     |> RankAssignment.assign_rank(t, ids)
     |> CrossingReduction.clustered_crossing_reduction()
@@ -46,7 +46,7 @@ defmodule Graph.Layout do
   defp assign_cluster_coordinates(%ClusteredLevelGraph{g: %{g: g} = lg, t: t} = clg) do
     t =
       g
-      |> Graph.vertices()
+      |> Bluetab.Graph.vertices()
       |> Enum.reduce(t, leaf_coordinate_reducer(g))
 
     case ClusterTree.post_order_clusters(t) do
@@ -63,24 +63,24 @@ defmodule Graph.Layout do
     end
   end
 
-  defp do_assign_cluster_depth(w, %Graph{} = t) do
+  defp do_assign_cluster_depth(w, %Bluetab.Graph{} = t) do
     z =
-      case Graph.in_neighbours(t, w) do
+      case Bluetab.Graph.in_neighbours(t, w) do
         ws ->
           ws
-          |> Enum.map(&Graph.vertex(t, &1, :z))
+          |> Enum.map(&Bluetab.Graph.vertex(t, &1, :z))
           |> Enum.max(fn -> -1 end)
       end
 
-    Graph.put_label(t, w, z: z + 1)
+    Bluetab.Graph.put_label(t, w, z: z + 1)
   end
 
-  defp adjust_border_reducer(%Graph{} = t) do
+  defp adjust_border_reducer(%Bluetab.Graph{} = t) do
     fn w, %LevelGraph{} = lg ->
-      {min, max} = Graph.vertex(t, w, :x)
+      {min, max} = Bluetab.Graph.vertex(t, w, :x)
 
       t
-      |> Graph.out_neighbours(w)
+      |> Bluetab.Graph.out_neighbours(w)
       |> Enum.filter(&border?/1)
       |> Enum.reduce(lg, fn
         {:l, _, _} = v, lg -> LevelGraph.put_label(lg, v, x: min)
@@ -89,31 +89,31 @@ defmodule Graph.Layout do
     end
   end
 
-  def leaf_coordinate_reducer(%Graph{} = g) do
-    fn v, %Graph{} = t ->
-      case Graph.vertex_label(g, v) do
-        %{x: x, r: r} -> Graph.put_label(t, v, x: {x, x}, r: {r, r})
+  def leaf_coordinate_reducer(%Bluetab.Graph{} = g) do
+    fn v, %Bluetab.Graph{} = t ->
+      case Bluetab.Graph.vertex_label(g, v) do
+        %{x: x, r: r} -> Bluetab.Graph.put_label(t, v, x: {x, x}, r: {r, r})
       end
     end
   end
 
-  def do_assign_cluster_coordinates(w, %Graph{} = t) do
+  def do_assign_cluster_coordinates(w, %Bluetab.Graph{} = t) do
     t
     |> child_coordinates(w)
     |> put_label(t, w)
   end
 
-  defp put_label(%{x: x, r: r}, %Graph{} = t, w) do
-    Graph.put_label(t, w, r: r, x: x)
+  defp put_label(%{x: x, r: r}, %Bluetab.Graph{} = t, w) do
+    Bluetab.Graph.put_label(t, w, r: r, x: x)
   end
 
-  defp child_coordinates(%Graph{} = t, w) do
-    case Graph.out_neighbours(t, w) do
+  defp child_coordinates(%Bluetab.Graph{} = t, w) do
+    case Bluetab.Graph.out_neighbours(t, w) do
       vs ->
         x =
           vs
           |> Enum.reject(&dummy?/1)
-          |> Enum.map(&Graph.vertex(t, &1, :x))
+          |> Enum.map(&Bluetab.Graph.vertex(t, &1, :x))
           |> Enum.flat_map(&Tuple.to_list/1)
           |> Enum.min_max()
           |> expand(2, 2)
@@ -121,7 +121,7 @@ defmodule Graph.Layout do
         r =
           vs
           |> Enum.filter(&y_border?/1)
-          |> Enum.map(&Graph.vertex(t, &1, :r))
+          |> Enum.map(&Bluetab.Graph.vertex(t, &1, :r))
           |> Enum.flat_map(&Tuple.to_list/1)
           |> Enum.min_max()
 

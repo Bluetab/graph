@@ -1,6 +1,6 @@
-defmodule Graph.ClusteredGraph do
+defmodule Bluetab.Graph.ClusteredGraph do
   @moduledoc """
-  Forster (2005): A Clustered Graph $G = (V, E, C, I)$ consists of an underlying
+  Forster (2005): A Clustered Bluetab.Graph $G = (V, E, C, I)$ consists of an underlying
   graph $(V, E)$, clusters $C$, and a recursive inclusion relation $I$. $I$
   builds a rooted tree $Gamma = (V uu C, I)$ with the clusters $C$ as inner
   nodes and the vertice $V$ as leaves, such that each cluster has at least two
@@ -8,19 +8,19 @@ defmodule Graph.ClusteredGraph do
 
   In this implementation we allow a cluster to have only one child.
   """
-  alias Graph.Vertex
+  alias Bluetab.Graph.Vertex
 
-  defstruct g: %Graph{}, t: %Graph{}
+  defstruct g: %Bluetab.Graph{}, t: %Bluetab.Graph{}
 
-  @type t :: %__MODULE__{g: Graph.t(), t: Graph.t()}
+  @type t :: %__MODULE__{g: Bluetab.Graph.t(), t: Bluetab.Graph.t()}
 
-  @spec new(Graph.t(), Graph.t()) :: t
-  def new(%Graph{} = g, %Graph{} = t) do
-    if Graph.vertices(g) != Graph.sink_vertices(t) do
+  @spec new(Bluetab.Graph.t(), Bluetab.Graph.t()) :: t
+  def new(%Bluetab.Graph{} = g, %Bluetab.Graph{} = t) do
+    if Bluetab.Graph.vertices(g) != Bluetab.Graph.sink_vertices(t) do
       raise(ArgumentError, "vertices must match")
     end
 
-    unless Graph.tree?(t) do
+    unless Bluetab.Graph.tree?(t) do
       raise(ArgumentError, "second argument must be a tree")
     end
 
@@ -29,8 +29,8 @@ defmodule Graph.ClusteredGraph do
 
   @spec subgraph(t, [Vertex.id()]) :: t
   def subgraph(%__MODULE__{g: g, t: t}, vs) do
-    g = Graph.subgraph(g, vs)
-    t = Graph.subgraph(t, vs)
+    g = Bluetab.Graph.subgraph(g, vs)
+    t = Bluetab.Graph.subgraph(t, vs)
     new(g, t)
   end
 end

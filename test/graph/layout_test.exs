@@ -1,12 +1,12 @@
-defmodule Graph.LayoutTest do
-  use GraphCase
+defmodule Bluetab.Graph.LayoutTest do
+  use Bluetab.GraphCase
   use TreeCase
 
-  alias Graph.ClusteredLevelGraph
-  alias Graph.CrossingReduction
-  alias Graph.Layout
-  alias Graph.LevelGraph
-  alias Graph.RankAssignment
+  alias Bluetab.Graph.ClusteredLevelGraph
+  alias Bluetab.Graph.CrossingReduction
+  alias Bluetab.Graph.Layout
+  alias Bluetab.Graph.LevelGraph
+  alias Bluetab.Graph.RankAssignment
 
   @vs2 [:sql1, :src1, :src2, :src3, :src4, :out1, :dwh11, :dwh21]
   @es2 [
@@ -110,7 +110,7 @@ defmodule Graph.LayoutTest do
     ]
   ]
 
-  describe "Graph.Layout" do
+  describe "Bluetab.Graph.Layout" do
     @tag vertices: @vertices
     @tag edges: @edges
     @tag tree: @tree
@@ -163,7 +163,7 @@ defmodule Graph.LayoutTest do
 
   def get_border_vertices(%LevelGraph{g: g}, id, side) do
     g
-    |> Graph.vertices()
+    |> Bluetab.Graph.vertices()
     |> Enum.filter(fn
       {^side, ^id, _} -> true
       _ -> false

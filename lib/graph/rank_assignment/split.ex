@@ -1,64 +1,64 @@
-defmodule Graph.RankAssignment.Split do
+defmodule Bluetab.Graph.RankAssignment.Split do
   @moduledoc """
   Support for splitting clusters that span multiple ranks but that don't have
   children on each rank of the span.
   """
 
-  alias Graph.ClusterTree
+  alias Bluetab.Graph.ClusterTree
 
   require Logger
 
-  @spec split_clusters(Graph.t()) :: Graph.t()
-  def split_clusters(%Graph{} = g) do
+  @spec split_clusters(Bluetab.Graph.t()) :: Bluetab.Graph.t()
+  def split_clusters(%Bluetab.Graph{} = g) do
     g
     |> ClusterTree.post_order_clusters()
-    |> Enum.reject(&(Graph.in_degree(g, &1) == 0))
+    |> Enum.reject(&(Bluetab.Graph.in_degree(g, &1) == 0))
     |> Enum.filter(&multispan?(g, &1))
     |> Enum.reduce(g, &split_cluster/2)
   end
 
-  defp multispan?(%Graph{} = g, v) do
-    case Graph.vertex(g, v, :r) do
+  defp multispan?(%Bluetab.Graph{} = g, v) do
+    case Bluetab.Graph.vertex(g, v, :r) do
       l when is_list(l) and length(l) > 1 -> true
       _ -> false
     end
   end
 
-  defp split_cluster(w, %Graph{} = g) do
+  defp split_cluster(w, %Bluetab.Graph{} = g) do
     with %{} = groups <- chunk_children(g, w),
-         %Graph{} = acc <- Graph.del_vertex(g, w) do
+         %Bluetab.Graph{} = acc <- Bluetab.Graph.del_vertex(g, w) do
       Enum.reduce(groups, acc, add_cluster_span_vertex(g, w))
     end
   end
 
-  defp add_cluster_span_vertex(%Graph{} = g, w) do
-    with [parent] <- Graph.in_neighbours(g, w),
-         label <- Graph.vertex_label(g, w) do
-      fn {r, vs}, %Graph{} = g ->
+  defp add_cluster_span_vertex(%Bluetab.Graph{} = g, w) do
+    with [parent] <- Bluetab.Graph.in_neighbours(g, w),
+         label <- Bluetab.Graph.vertex_label(g, w) do
+      fn {r, vs}, %Bluetab.Graph{} = g ->
         Logger.debug("Splitting cluster #{inspect(w)} at span #{inspect(r)}")
 
         g =
           g
-          |> Graph.add_vertex({w, r}, Map.put(label, :r, r))
-          |> Graph.add_edge(parent, {w, r})
+          |> Bluetab.Graph.add_vertex({w, r}, Map.put(label, :r, r))
+          |> Bluetab.Graph.add_edge(parent, {w, r})
 
-        Enum.reduce(vs, g, &Graph.add_edge(&2, {w, r}, &1))
+        Enum.reduce(vs, g, &Bluetab.Graph.add_edge(&2, {w, r}, &1))
       end
     end
   end
 
-  defp chunk_children(%Graph{} = t, w) do
-    case Graph.vertex(t, w, :r) do
+  defp chunk_children(%Bluetab.Graph{} = t, w) do
+    case Bluetab.Graph.vertex(t, w, :r) do
       rs when is_list(rs) ->
         t
-        |> Graph.out_neighbours(w)
+        |> Bluetab.Graph.out_neighbours(w)
         |> Enum.group_by(&containing_span(t, &1, rs))
     end
   end
 
-  defp containing_span(%Graph{} = t, v, spans) do
+  defp containing_span(%Bluetab.Graph{} = t, v, spans) do
     t
-    |> Graph.vertex(v, :r)
+    |> Bluetab.Graph.vertex(v, :r)
     |> containing_span(spans)
   end
 

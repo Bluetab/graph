@@ -1,32 +1,32 @@
-defmodule Graph.ClusteredLevelGraph do
+defmodule Bluetab.Graph.ClusteredLevelGraph do
   @moduledoc """
-  A Clustered Level Graph is defined as a k-level graph $(V, E, C, I, Phi)$ and
+  A Clustered Level Bluetab.Graph is defined as a k-level graph $(V, E, C, I, Phi)$ and
   a cluster tree $Gamma = (V uu C, I), V nn C = O/$.
   """
 
-  alias Graph.ClusterTree
-  alias Graph.Edge
-  alias Graph.EdgeRouting
-  alias Graph.LevelGraph
-  alias Graph.Traversal
-  alias Graph.Vertex
+  alias Bluetab.Graph.ClusterTree
+  alias Bluetab.Graph.Edge
+  alias Bluetab.Graph.EdgeRouting
+  alias Bluetab.Graph.LevelGraph
+  alias Bluetab.Graph.Traversal
+  alias Bluetab.Graph.Vertex
 
-  defstruct g: %LevelGraph{}, t: %Graph{}, crossings: 0
+  defstruct g: %LevelGraph{}, t: %Bluetab.Graph{}, crossings: 0
 
-  @type t :: %__MODULE__{g: LevelGraph.t(), t: Graph.t()}
+  @type t :: %__MODULE__{g: LevelGraph.t(), t: Bluetab.Graph.t()}
   @type span :: {pos_integer, pos_integer}
   @typep vertex_id :: Vertex.id()
 
   @doc """
-  Given a [k-level graph](`t:Graph.LevelGraph.t/0`) $(V, E, C, I, Phi)$ and a
-  [cluster tree](`t:Graph.t/0`) $Gamma = (V uu C, I), V nn C = O/$, returns a
+  Given a [k-level graph](`t:Bluetab.Graph.LevelGraph.t/0`) $(V, E, C, I, Phi)$ and a
+  [cluster tree](`t:Bluetab.Graph.t/0`) $Gamma = (V uu C, I), V nn C = O/$, returns a
   new clustered level graph.
   """
-  @spec new(LevelGraph.t(), Graph.t()) :: t
-  def new(%LevelGraph{g: g} = lg, %Graph{} = t) do
-    with {:tree, true} <- {:tree, Graph.arborescence?(t)},
-         v1s <- Graph.vertices(g),
-         v2s <- Graph.sink_vertices(t),
+  @spec new(LevelGraph.t(), Bluetab.Graph.t()) :: t
+  def new(%LevelGraph{g: g} = lg, %Bluetab.Graph{} = t) do
+    with {:tree, true} <- {:tree, Bluetab.Graph.arborescence?(t)},
+         v1s <- Bluetab.Graph.vertices(g),
+         v2s <- Bluetab.Graph.sink_vertices(t),
          {:diff, []} <- {:diff, diff(v1s, v2s)} do
       %__MODULE__{g: lg, t: t}
     else
@@ -60,10 +60,10 @@ defmodule Graph.ClusteredLevelGraph do
       %{g: g} = lg ->
         vs =
           g
-          |> Graph.vertices()
+          |> Bluetab.Graph.vertices()
           |> Traversal.reaching(t)
 
-        new(lg, Graph.subgraph(t, vs))
+        new(lg, Bluetab.Graph.subgraph(t, vs))
     end
   end
 
@@ -100,12 +100,12 @@ defmodule Graph.ClusteredLevelGraph do
   def levels(%__MODULE__{g: g, t: t}, v) do
     [v]
     |> Traversal.reachable(t)
-    |> Enum.filter(&(Graph.out_degree(t, &1) == 0))
+    |> Enum.filter(&(Bluetab.Graph.out_degree(t, &1) == 0))
     |> Enum.map(&LevelGraph.level(g, &1))
     |> MapSet.new()
   end
 
-  @spec level_cluster_trees(t, Keyword.t()) :: %{pos_integer: Graph.t()}
+  @spec level_cluster_trees(t, Keyword.t()) :: %{pos_integer: Bluetab.Graph.t()}
   def level_cluster_trees(%__MODULE__{g: g, t: t}, opts \\ []) do
     t
     |> ClusterTree.leaves()
@@ -144,7 +144,7 @@ defmodule Graph.ClusteredLevelGraph do
   @spec vertices_by_span(t) :: %{span: [Vertex.id()]}
   def vertices_by_span(%__MODULE__{t: t} = clg) do
     t
-    |> Graph.vertices()
+    |> Bluetab.Graph.vertices()
     |> Enum.group_by(&span(clg, &1))
   end
 
@@ -165,15 +165,15 @@ defmodule Graph.ClusteredLevelGraph do
 
         t =
           t
-          |> Graph.add_vertex({:l, c, rank})
-          |> Graph.add_vertex({:r, c, rank})
-          |> Graph.add_edge(c, {:l, c, rank})
-          |> Graph.add_edge(c, {:r, c, rank})
+          |> Bluetab.Graph.add_vertex({:l, c, rank})
+          |> Bluetab.Graph.add_vertex({:r, c, rank})
+          |> Bluetab.Graph.add_edge(c, {:l, c, rank})
+          |> Bluetab.Graph.add_edge(c, {:r, c, rank})
 
         g =
           g
-          |> Graph.add_vertex({:l, c, rank}, border: :left, r: rank, dummy: dummy)
-          |> Graph.add_vertex({:r, c, rank}, border: :right, r: rank, dummy: dummy)
+          |> Bluetab.Graph.add_vertex({:l, c, rank}, border: :left, r: rank, dummy: dummy)
+          |> Bluetab.Graph.add_vertex({:r, c, rank}, border: :right, r: rank, dummy: dummy)
 
         lg = %{lg | g: g}
 
@@ -188,8 +188,8 @@ defmodule Graph.ClusteredLevelGraph do
 
         g =
           g
-          |> Graph.add_edge({:l, c, rank1}, {:l, c, rank2}, inner: inner)
-          |> Graph.add_edge({:r, c, rank1}, {:r, c, rank2}, inner: inner)
+          |> Bluetab.Graph.add_edge({:l, c, rank1}, {:l, c, rank2}, inner: inner)
+          |> Bluetab.Graph.add_edge({:r, c, rank1}, {:r, c, rank2}, inner: inner)
 
         lg = %{lg | g: g}
 
@@ -202,7 +202,7 @@ defmodule Graph.ClusteredLevelGraph do
   def concentrate_dummy_edges(%__MODULE__{g: %{g: g} = lg} = clg) do
     {out_edges, in_edges} =
       g
-      |> Graph.get_edges(fn {_, {v1, v2, _}} -> {v1, v2} end)
+      |> Bluetab.Graph.get_edges(fn {_, {v1, v2, _}} -> {v1, v2} end)
       |> Enum.filter(fn
         {v1, {v1, _, _} = v2} -> LevelGraph.level(lg, v2) == LevelGraph.level(lg, v1) + 1
         {{_, v2, _} = v1, v2} -> LevelGraph.level(lg, v2) == LevelGraph.level(lg, v1) + 1
@@ -230,17 +230,17 @@ defmodule Graph.ClusteredLevelGraph do
   end
 
   defp concentrate_dummy_edge({v2, v2s}, %__MODULE__{g: %{g: g} = lg, t: t} = clg) do
-    in_neighbours = Enum.flat_map(v2s, &Graph.in_neighbours(g, &1))
-    out_neighbours = Enum.flat_map(v2s, &Graph.out_neighbours(g, &1))
-    g = Graph.del_vertices(g, v2s)
-    g = Enum.reduce(in_neighbours, g, &Graph.add_edge(&2, &1, v2))
-    g = Enum.reduce(out_neighbours, g, &Graph.add_edge(&2, v2, &1))
-    %{clg | g: %{lg | g: g}, t: Graph.del_vertices(t, v2s)}
+    in_neighbours = Enum.flat_map(v2s, &Bluetab.Graph.in_neighbours(g, &1))
+    out_neighbours = Enum.flat_map(v2s, &Bluetab.Graph.out_neighbours(g, &1))
+    g = Bluetab.Graph.del_vertices(g, v2s)
+    g = Enum.reduce(in_neighbours, g, &Bluetab.Graph.add_edge(&2, &1, v2))
+    g = Enum.reduce(out_neighbours, g, &Bluetab.Graph.add_edge(&2, v2, &1))
+    %{clg | g: %{lg | g: g}, t: Bluetab.Graph.del_vertices(t, v2s)}
   end
 
   @spec split_long_edges(t) :: t
   def split_long_edges(%__MODULE__{g: lg, t: t} = clg) do
-    case Graph.source_vertices(t) do
+    case Bluetab.Graph.source_vertices(t) do
       [root] ->
         lg
         |> LevelGraph.long_span_edges()
@@ -266,22 +266,22 @@ defmodule Graph.ClusteredLevelGraph do
     {g, t} =
       routing
       |> Enum.sort()
-      |> Enum.reduce({Graph.del_edge(g, edge_id), t, first}, fn {r, c}, {g, t, w_prev} ->
+      |> Enum.reduce({Bluetab.Graph.del_edge(g, edge_id), t, first}, fn {r, c}, {g, t, w_prev} ->
         w = {v1, v2, r}
 
         g =
           g
-          |> Graph.add_vertex(w, r: r, dummy: true)
-          |> Graph.add_edge(w_prev, w, l)
+          |> Bluetab.Graph.add_vertex(w, r: r, dummy: true)
+          |> Bluetab.Graph.add_edge(w_prev, w, l)
 
         t =
           t
-          |> Graph.add_vertex(w)
-          |> Graph.add_edge(c, w)
+          |> Bluetab.Graph.add_vertex(w)
+          |> Bluetab.Graph.add_edge(c, w)
 
         {g, t, w}
       end)
-      |> then(fn {g, t, w_prev} -> {Graph.add_edge(g, w_prev, last, l), t} end)
+      |> then(fn {g, t, w_prev} -> {Bluetab.Graph.add_edge(g, w_prev, last, l), t} end)
 
     lg = %{lg | g: g}
     %{clg | g: lg, t: t}
@@ -325,7 +325,7 @@ defmodule Graph.ClusteredLevelGraph do
   defimpl Inspect do
     import Inspect.Algebra
 
-    alias Graph.ClusteredLevelGraph
+    alias Bluetab.Graph.ClusteredLevelGraph
 
     def inspect(%ClusteredLevelGraph{} = clg, opts) do
       opts = %Inspect.Opts{opts | charlists: :as_lists}

@@ -1,11 +1,11 @@
-defmodule Graph.NestingGraphTest do
-  use GraphCase
+defmodule Bluetab.Graph.NestingGraphTest do
+  use Bluetab.GraphCase
   use TreeCase
 
-  alias Graph.ClusteredLevelGraph
-  alias Graph.NestingGraph
+  alias Bluetab.Graph.ClusteredLevelGraph
+  alias Bluetab.Graph.NestingGraph
 
-  describe "Graph.NestingGraph" do
+  describe "Bluetab.Graph.NestingGraph" do
     @tag vertices: [:a, :b, :c, :d, 1, 2, 3, 4]
     @tag tree: [a: [b: [1, 2], c: [d: [3, 4]]]]
     @tag edges: [{1, 2}, {:b, 1}, {:c, 1}, {3, :c}, {4, :b}, {:c, :d}, {:b, :a}, {:d, :b}, {2, 3}]
@@ -14,7 +14,7 @@ defmodule Graph.NestingGraphTest do
 
       assert %ClusteredLevelGraph{g: %{g: g}} = ng
 
-      assert Graph.vertices(g) |||
+      assert Bluetab.Graph.vertices(g) |||
                [
                  1,
                  2,
@@ -58,13 +58,13 @@ defmodule Graph.NestingGraphTest do
         {:d, :-} => 3
       }
       |> Enum.each(fn {v, r} ->
-        assert %{r: rank} = Graph.vertex_label(g, v)
+        assert %{r: rank} = Bluetab.Graph.vertex_label(g, v)
         assert rank == r, "Vertex #{inspect(v)} has rank #{rank}, expected #{r}"
       end)
 
       inverted_edges =
         g
-        |> Graph.get_edges()
+        |> Bluetab.Graph.get_edges()
         |> Enum.filter(fn %{label: l} -> l[:inverted] end)
         |> Enum.map(fn %{v1: v1, v2: v2} -> {v1, v2} end)
 
@@ -79,7 +79,7 @@ defmodule Graph.NestingGraphTest do
 
       assert %ClusteredLevelGraph{g: %{g: g}} = ng
 
-      assert Graph.vertices(g) |||
+      assert Bluetab.Graph.vertices(g) |||
                [
                  1,
                  2,
@@ -141,7 +141,7 @@ defmodule Graph.NestingGraphTest do
         {:root, :-} => 1
       }
       |> Enum.each(fn {v, r} ->
-        assert %{r: rank} = Graph.vertex_label(g, v)
+        assert %{r: rank} = Bluetab.Graph.vertex_label(g, v)
         assert rank == r, "Vertex #{inspect(v)} has rank #{rank}, expected #{r}"
       end)
 

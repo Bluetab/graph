@@ -1,23 +1,23 @@
-defmodule Graph.ConstraintGraph do
+defmodule Bluetab.Graph.ConstraintGraph do
   @moduledoc """
   Implementation of a constraing graph used in the heuristic for constrained
   two-level crossing reduction, based on the description in Michael Forster's
   paper:
 
   Forster M. (2005) A Fast and Simple Heuristic for Constrained Two-Level
-  Crossing Reduction. In: Pach J. (eds) Graph Drawing. GD 2004. Lecture Notes in
+  Crossing Reduction. In: Pach J. (eds) Bluetab.Graph Drawing. GD 2004. Lecture Notes in
   Computer Science, vol 3383. Springer, Berlin, Heidelberg,
   https://doi.org/10.1007/978-3-540-31843-9_22
   """
 
-  alias Graph.Edge
-  alias Graph.Vertex
+  alias Bluetab.Graph.Edge
+  alias Bluetab.Graph.Vertex
 
   require Logger
 
   @type constraint :: {vertex, vertex}
   @type measure_fn :: (vertex -> number)
-  @typep graph :: Graph.t()
+  @typep graph :: Bluetab.Graph.t()
   @typep vertex :: Vertex.id()
 
   @doc """
@@ -26,20 +26,20 @@ defmodule Graph.ConstraintGraph do
   """
   @spec new([constraint]) :: graph
   def new(constraints) do
-    Enum.reduce(constraints, Graph.new([], acyclic: true), &add_constraint/2)
+    Enum.reduce(constraints, Bluetab.Graph.new([], acyclic: true), &add_constraint/2)
   end
 
   @spec add_constraint({vertex, vertex}, graph) :: graph
-  defp add_constraint({v1, v2}, %Graph{} = g), do: add_constraint([v1, v2], g)
+  defp add_constraint({v1, v2}, %Bluetab.Graph{} = g), do: add_constraint([v1, v2], g)
 
   @spec add_constraint([vertex], graph) :: graph
-  defp add_constraint([v1, v2], %Graph{} = g) do
+  defp add_constraint([v1, v2], %Bluetab.Graph{} = g) do
     Logger.debug("Adding constraint [#{inspect(v1)}, #{inspect(v2)}]")
 
     g
-    |> Graph.add_vertex(v1)
-    |> Graph.add_vertex(v2)
-    |> Graph.add_edge(v1, v2)
+    |> Bluetab.Graph.add_vertex(v1)
+    |> Bluetab.Graph.add_vertex(v2)
+    |> Bluetab.Graph.add_edge(v1, v2)
   end
 
   @doc """
@@ -47,21 +47,21 @@ defmodule Graph.ConstraintGraph do
   constraints incident on `s` or `t` with new constraints incident on `vc`.
   """
   @spec merge_constraints(graph, constraint, vertex) :: graph
-  def merge_constraints(%Graph{} = gc, {s, t}, vc) do
+  def merge_constraints(%Bluetab.Graph{} = gc, {s, t}, vc) do
     Logger.debug("Merging constraints for #{inspect(s)}, #{inspect(t)}")
 
     gc
-    |> Graph.edges()
-    |> Enum.map(&Graph.edge(gc, &1))
+    |> Bluetab.Graph.edges()
+    |> Enum.map(&Bluetab.Graph.edge(gc, &1))
     |> Enum.map(fn %Edge{v1: v1, v2: v2} -> [v1, v2] end)
     |> Enum.flat_map(& &1)
     |> Enum.map(&Map.get(%{s => vc, t => vc}, &1, &1))
     |> Enum.chunk_every(2)
     |> Enum.reject(&self_loop?(&1, vc))
     |> Enum.reduce(gc, &add_constraint/2)
-    |> Graph.del_vertex(s)
-    |> Graph.del_vertex(t)
-    |> Graph.add_vertex(vc)
+    |> Bluetab.Graph.del_vertex(s)
+    |> Bluetab.Graph.del_vertex(t)
+    |> Bluetab.Graph.add_vertex(vc)
   end
 
   @spec self_loop?([vertex], vertex) :: boolean
@@ -76,10 +76,10 @@ defmodule Graph.ConstraintGraph do
   order, respectively.
   """
   @spec find_violated_constraint(graph, measure_fn) :: nil | constraint
-  def find_violated_constraint(%Graph{} = cg, b) do
+  def find_violated_constraint(%Bluetab.Graph{} = cg, b) do
     cg
-    |> Graph.vertices()
-    |> Enum.filter(&(Graph.in_degree(cg, &1) == 0))
+    |> Bluetab.Graph.vertices()
+    |> Enum.filter(&(Bluetab.Graph.in_degree(cg, &1) == 0))
     |> do_find_violated_constraint(cg, %{}, b)
   end
 
@@ -96,7 +96,7 @@ defmodule Graph.ConstraintGraph do
       nil ->
         {i, vs} =
           cg
-          |> Graph.out_neighbours(v)
+          |> Bluetab.Graph.out_neighbours(v)
           |> Enum.reduce({i, vs}, &reduce_constraint(cg, v, &1, &2))
 
         do_find_violated_constraint(vs, cg, i, b)
@@ -108,7 +108,7 @@ defmodule Graph.ConstraintGraph do
     i = Map.put(i, t, l)
 
     vs =
-      if Enum.count(l) == Graph.in_degree(cg, t) do
+      if Enum.count(l) == Bluetab.Graph.in_degree(cg, t) do
         [t | vs]
       else
         vs

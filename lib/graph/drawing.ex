@@ -1,12 +1,12 @@
-defmodule Graph.Drawing do
+defmodule Bluetab.Graph.Drawing do
   @moduledoc """
   Support for creating drawings of clustered level graphs.
   """
 
-  alias Graph.ClusteredLevelGraph
-  alias Graph.Drawing.Grid
-  alias Graph.Layout
-  alias Graph.LevelGraph
+  alias Bluetab.Graph.ClusteredLevelGraph
+  alias Bluetab.Graph.Drawing.Grid
+  alias Bluetab.Graph.Layout
+  alias Bluetab.Graph.LevelGraph
 
   @derive Jason.Encoder
   defstruct groups: [],
@@ -24,7 +24,7 @@ defmodule Graph.Drawing do
           excludes: list,
           opts: map
         }
-  @type label_fn :: (Graph.Vertex.label() -> map)
+  @type label_fn :: (Bluetab.Graph.Vertex.label() -> map)
   @type type :: :lineage | :impact
 
   @spec new(Layout.t(), label_fn, Keyword.t()) :: t
@@ -55,7 +55,7 @@ defmodule Graph.Drawing do
   @spec resources(LevelGraph.t(), Grid.t(), label_fn) :: list
   def resources(%LevelGraph{g: g}, %Grid{} = grid, label_fn) do
     g
-    |> Graph.vertices(labels: true)
+    |> Bluetab.Graph.vertices(labels: true)
     |> Enum.reject(fn {v, _l} -> is_tuple(v) end)
     |> Enum.map(fn {_, label} ->
       with {%{left: x, w: w}, %{top: y, h: h}} <- Grid.coords(grid, label),
@@ -76,7 +76,7 @@ defmodule Graph.Drawing do
     path_fn = polyline_fn(g, grid, type)
 
     g
-    |> Graph.get_edges(fn {_, {v1, v2, label}} -> {v1, v2, label} end)
+    |> Bluetab.Graph.get_edges(fn {_, {v1, v2, label}} -> {v1, v2, label} end)
     |> Enum.reject(fn {v1, v2, _} -> border?(v1) or border?(v2) end)
     |> Enum.group_by(&endpoints/1, fn {v1, v2, _} -> [v1, v2] end)
     |> Enum.map(path_fn)
@@ -87,10 +87,10 @@ defmodule Graph.Drawing do
     groups(t, grid, label_fn)
   end
 
-  @spec groups(Graph.t(), Grid.t(), label_fn) :: list
-  def groups(%Graph{} = t, %Grid{} = grid, label_fn) do
+  @spec groups(Bluetab.Graph.t(), Grid.t(), label_fn) :: list
+  def groups(%Bluetab.Graph{} = t, %Grid{} = grid, label_fn) do
     t
-    |> Graph.vertex_labels()
+    |> Bluetab.Graph.vertex_labels()
     |> Enum.filter(&Map.has_key?(&1, :z))
     |> Enum.map(fn
       %{r: xs, x: ys, z: z} = label ->
@@ -115,14 +115,14 @@ defmodule Graph.Drawing do
   defp endpoints({v1, {v1, v2, _}, %{} = l}), do: {v1, v2, l[:inverted]}
   defp endpoints({v1, v2, %{} = l}), do: {v1, v2, l[:inverted]}
 
-  defp polyline_fn(%Graph{} = g, %Grid{} = grid, type) do
+  defp polyline_fn(%Bluetab.Graph{} = g, %Grid{} = grid, type) do
     fn {{v1, v2, inverted}, vs} ->
       path =
         vs
         |> Enum.flat_map(& &1)
         |> MapSet.new()
         |> Enum.sort_by(sorter(g, type, inverted))
-        |> Enum.map(&Graph.vertex_label(g, &1))
+        |> Enum.map(&Bluetab.Graph.vertex_label(g, &1))
         |> Enum.map(&Grid.coords(grid, &1))
         |> Enum.chunk_every(2, 1)
         |> Enum.reduce([], path_reducer(type, inverted))
@@ -136,8 +136,8 @@ defmodule Graph.Drawing do
   defp sorter(g, :lineage, true), do: sorter(g, :impact, false)
   defp sorter(g, :lineage, _falsey), do: sorter(g, :impact, true)
 
-  defp sorter(g, :impact, true), do: &(0 - Graph.vertex(g, &1, :r))
-  defp sorter(g, :impact, _falsey), do: &Graph.vertex(g, &1, :r)
+  defp sorter(g, :impact, true), do: &(0 - Bluetab.Graph.vertex(g, &1, :r))
+  defp sorter(g, :impact, _falsey), do: &Bluetab.Graph.vertex(g, &1, :r)
 
   defp path_reducer(:lineage, true), do: path_reducer(:impact, false)
   defp path_reducer(:lineage, _falsey), do: path_reducer(:impact, true)

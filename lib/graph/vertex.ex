@@ -1,4 +1,4 @@
-defmodule Graph.Vertex do
+defmodule Bluetab.Graph.Vertex do
   @moduledoc """
   Represents a vertex in a graph.
   """

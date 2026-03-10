@@ -1,7 +1,7 @@
-defmodule Graph.RangeMapTest do
-  use GraphCase
+defmodule Bluetab.Graph.RangeMapTest do
+  use Bluetab.GraphCase
 
-  alias Graph.RangeMap
+  alias Bluetab.Graph.RangeMap
 
   describe "Range Map" do
     test "accumulates counts for each range element" do

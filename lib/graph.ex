@@ -1,11 +1,11 @@
-defmodule Graph do
+defmodule Bluetab.Graph do
   @moduledoc """
   Represents a directed graph. Borrows heavily from the OTP `digraph` module.
   """
 
-  alias Graph.Edge
-  alias Graph.Traversal
-  alias Graph.Vertex
+  alias Bluetab.Graph.Edge
+  alias Bluetab.Graph.Traversal
+  alias Bluetab.Graph.Vertex
 
   defstruct vertices: %{}, edges: %{}, in_edges: %{}, out_edges: %{}, opts: []
 
@@ -27,8 +27,8 @@ defmodule Graph do
 
     ## Examples
 
-      iex> Graph.new()
-      %Graph{}
+      iex> Bluetab.Graph.new()
+      %Bluetab.Graph{}
 
   """
   @spec new :: t
@@ -41,16 +41,16 @@ defmodule Graph do
 
     ## Examples
 
-      iex> g = Graph.new([:foo, :bar])
-      iex> Graph.vertices(g)
+      iex> g = Bluetab.Graph.new([:foo, :bar])
+      iex> Bluetab.Graph.vertices(g)
       [:foo, :bar]
 
-      iex> g = Graph.new(%{foo: [w: 0], bar: [w: 1]})
-      iex> Graph.vertices(g)
+      iex> g = Bluetab.Graph.new(%{foo: [w: 0], bar: [w: 1]})
+      iex> Bluetab.Graph.vertices(g)
       [:foo, :bar]
 
-      iex> g = Graph.new([foo: %{w: 0}, bar: []])
-      iex> Graph.vertices(g)
+      iex> g = Bluetab.Graph.new([foo: %{w: 0}, bar: []])
+      iex> Bluetab.Graph.vertices(g)
       [:foo, :bar]
 
   """
@@ -82,9 +82,9 @@ defmodule Graph do
 
     ## Examples
 
-      iex> g = Graph.new()
-      iex> Graph.add_vertex(g, :foo)
-      %Graph{vertices: %{foo: %{}}}
+      iex> g = Bluetab.Graph.new()
+      iex> Bluetab.Graph.add_vertex(g, :foo)
+      %Bluetab.Graph{vertices: %{foo: %{}}}
 
   """
   @spec add_vertex(t, vertex_id, Enumerable.t()) :: t
@@ -107,9 +107,9 @@ defmodule Graph do
 
     ## Examples
 
-      iex> g = Graph.new(foo: [w: 0], bar: [w: 1])
-      iex> Graph.del_vertex(g, :foo)
-      %Graph{vertices: %{bar: %{w: 1}}}
+      iex> g = Bluetab.Graph.new(foo: [w: 0], bar: [w: 1])
+      iex> Bluetab.Graph.del_vertex(g, :foo)
+      %Bluetab.Graph{vertices: %{bar: %{w: 1}}}
 
   """
   @spec del_vertex(t, vertex_id) :: t
@@ -183,11 +183,11 @@ defmodule Graph do
 
     ## Examples
 
-      iex> g = Graph.new([:foo, :bar, :baz])
-      iex> Graph.edge(g, :e1)
+      iex> g = Bluetab.Graph.new([:foo, :bar, :baz])
+      iex> Bluetab.Graph.edge(g, :e1)
       nil
-      iex> g = Graph.add_edge(g, :e1, :foo, :bar, w: 0)
-      iex> Graph.edge(g, :e1)
+      iex> g = Bluetab.Graph.add_edge(g, :e1, :foo, :bar, w: 0)
+      iex> Bluetab.Graph.edge(g, :e1)
       %Edge{id: :e1, v1: :foo, v2: :bar, label: %{w: 0}}
 
   """
@@ -204,9 +204,9 @@ defmodule Graph do
 
     ## Examples
 
-      iex> g = Graph.new([:foo, :bar, :baz])
-      iex> g = Graph.add_edge(g, :e1, :foo, :bar, %{})
-      iex> Graph.edges(g)
+      iex> g = Bluetab.Graph.new([:foo, :bar, :baz])
+      iex> g = Bluetab.Graph.add_edge(g, :e1, :foo, :bar, %{})
+      iex> Bluetab.Graph.edges(g)
       [:e1]
 
   """
@@ -242,11 +242,11 @@ defmodule Graph do
 
     ## Examples
 
-      iex> g = Graph.new([:foo, :bar, :baz])
-      iex> g = Graph.add_edges(g, [{:foo, :bar}, {:bar, :baz}])
-      iex> Graph.out_neighbours(g, :foo)
+      iex> g = Bluetab.Graph.new([:foo, :bar, :baz])
+      iex> g = Bluetab.Graph.add_edges(g, [{:foo, :bar}, {:bar, :baz}])
+      iex> Bluetab.Graph.out_neighbours(g, :foo)
       [:bar]
-      iex> Graph.out_neighbours(g, :bar)
+      iex> Bluetab.Graph.out_neighbours(g, :bar)
       [:baz]
 
   """
@@ -274,11 +274,11 @@ defmodule Graph do
 
     ## Examples
 
-      iex> g = Graph.new([:foo, :bar, :baz])
-      iex> g = Graph.add_edge(g, :foo, :bar)
-      iex> g = Graph.add_edge(g, :bar, :baz)
-      iex> g = Graph.add_edge(g, :e3, :foo, :bar, %{})
-      iex> Graph.no_edges(g)
+      iex> g = Bluetab.Graph.new([:foo, :bar, :baz])
+      iex> g = Bluetab.Graph.add_edge(g, :foo, :bar)
+      iex> g = Bluetab.Graph.add_edge(g, :bar, :baz)
+      iex> g = Bluetab.Graph.add_edge(g, :e3, :foo, :bar, %{})
+      iex> Bluetab.Graph.no_edges(g)
       3
 
   """
@@ -292,10 +292,10 @@ defmodule Graph do
 
     ## Examples
 
-      iex> g = Graph.new([:foo, :bar, :baz])
-      iex> g = Graph.add_edge(g, :foo, :bar)
-      iex> g = Graph.add_edge(g, :bar, :baz)
-      iex> Graph.in_vertices(g)
+      iex> g = Bluetab.Graph.new([:foo, :bar, :baz])
+      iex> g = Bluetab.Graph.add_edge(g, :foo, :bar)
+      iex> g = Bluetab.Graph.add_edge(g, :bar, :baz)
+      iex> Bluetab.Graph.in_vertices(g)
       [:bar, :baz]
 
   """
@@ -700,9 +700,9 @@ defmodule Graph do
   defimpl Inspect do
     import Inspect.Algebra
 
-    def inspect(%Graph{vertices: vs}, opts) do
+    def inspect(%Bluetab.Graph{vertices: vs}, opts) do
       opts = %Inspect.Opts{opts | charlists: :as_lists}
-      concat(["#Graph<", Inspect.List.inspect(Map.keys(vs), opts), ">"])
+      concat(["#Bluetab.Graph<", Inspect.List.inspect(Map.keys(vs), opts), ">"])
     end
   end
 end

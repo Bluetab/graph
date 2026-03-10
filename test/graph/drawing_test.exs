@@ -1,25 +1,25 @@
-defmodule Graph.DrawingTest do
-  use GraphCase
+defmodule Bluetab.Graph.DrawingTest do
+  use Bluetab.GraphCase
   use TreeCase
 
-  alias Graph.Drawing
-  alias Graph.Layout
+  alias Bluetab.Graph.Drawing
+  alias Bluetab.Graph.Layout
 
   setup %{t: t, g: g} = _context do
     t =
       t
-      |> Graph.vertices()
-      |> Enum.reduce(t, &Graph.put_label(&2, &1, id: &1))
+      |> Bluetab.Graph.vertices()
+      |> Enum.reduce(t, &Bluetab.Graph.put_label(&2, &1, id: &1))
 
     g =
       g
-      |> Graph.vertices()
-      |> Enum.reduce(g, &Graph.put_label(&2, &1, id: &1))
+      |> Bluetab.Graph.vertices()
+      |> Enum.reduce(g, &Bluetab.Graph.put_label(&2, &1, id: &1))
 
     [layout: Layout.layout(g, t, [:a1], type: :impact)]
   end
 
-  describe "Graph.Drawing" do
+  describe "Bluetab.Graph.Drawing" do
     @tag edges: [a1: :a2, a2: :b1, b1: :b2, b2: :a2]
     @tag tree: [r: [a: [:a1, :a2], b: [:b1, :b2]]]
     test "Drawing.new/4 calculates group coordinates and dimensions", %{layout: layout} do

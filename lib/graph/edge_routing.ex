@@ -1,12 +1,12 @@
-defmodule Graph.EdgeRouting do
+defmodule Bluetab.Graph.EdgeRouting do
   @moduledoc """
   Edge routing for long-span edges, routing within the subgraphs nearest to the
   source and target vertices.
   """
-  alias Graph.ClusteredLevelGraph
-  alias Graph.Edge
-  alias Graph.LevelGraph
-  alias Graph.Vertex
+  alias Bluetab.Graph.ClusteredLevelGraph
+  alias Bluetab.Graph.Edge
+  alias Bluetab.Graph.LevelGraph
+  alias Bluetab.Graph.Vertex
 
   @type level :: LevelGraph.level()
 
@@ -38,7 +38,7 @@ defmodule Graph.EdgeRouting do
 
   defp routing_map(%ClusteredLevelGraph{g: lg, t: t}, root, v, l1, l2) do
     t
-    |> Graph.get_short_path(root, v)
+    |> Bluetab.Graph.get_short_path(root, v)
     |> Enum.reverse()
     |> tl()
     |> Enum.map(fn x ->

@@ -1,12 +1,12 @@
-defmodule Graph.Drawing.GridTest do
-  use GraphCase
+defmodule Bluetab.Graph.Drawing.GridTest do
+  use Bluetab.GraphCase
   use TreeCase
 
-  alias Graph.Drawing.Dimensions
-  alias Graph.Drawing.Grid
-  alias Graph.Layout
+  alias Bluetab.Graph.Drawing.Dimensions
+  alias Bluetab.Graph.Drawing.Grid
+  alias Bluetab.Graph.Layout
 
-  describe "Graph.Drawing.Grid" do
+  describe "Bluetab.Graph.Drawing.Grid" do
     @tag edges: [a1: :a2, a2: :b1, b1: :b2, b2: :a2]
     @tag tree: [root: [a: [:a1, :a2], b: [:b1, :b2]]]
     test "Grid.new/4 calculates x and y scales correctly", %{g: g, t: t} do

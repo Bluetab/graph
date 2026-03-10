@@ -1,11 +1,11 @@
-defmodule Graph.TraversalTest do
-  use GraphCase
+defmodule Bluetab.Graph.TraversalTest do
+  use Bluetab.GraphCase
 
-  alias Graph.Traversal
+  alias Bluetab.Graph.Traversal
 
-  doctest Graph.Traversal
+  doctest Bluetab.Graph.Traversal
 
-  describe "Graph.Traversal" do
+  describe "Bluetab.Graph.Traversal" do
     @tag vertices: [:foo, :bar, :baz, :xyzzy]
     @tag edges: [foo: :bar, bar: :baz]
     test "components/1 returns components of a graph", %{g: g} do
@@ -91,8 +91,8 @@ defmodule Graph.TraversalTest do
                [[1, 2], [3, 4]]
                |> Enum.map(&Traversal.reaching_subgraph(g, &1))
 
-      assert Graph.vertices(t1) ||| [1, 2, :a, :b]
-      assert Graph.vertices(t2) ||| [3, 4, :a, :b, :c]
+      assert Bluetab.Graph.vertices(t1) ||| [1, 2, :a, :b]
+      assert Bluetab.Graph.vertices(t2) ||| [3, 4, :a, :b, :c]
       assert edges(t1) ||| [a: 1, a: :b, b: 2]
       assert edges(t2) ||| [a: :b, b: :c, c: 3, c: 4]
     end

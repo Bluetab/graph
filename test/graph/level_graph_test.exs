@@ -1,9 +1,9 @@
-defmodule Graph.LevelGraphTest do
-  use GraphCase
+defmodule Bluetab.Graph.LevelGraphTest do
+  use Bluetab.GraphCase
 
-  alias Graph.LevelGraph
+  alias Bluetab.Graph.LevelGraph
 
-  describe "Graph.LevelGraph" do
+  describe "Bluetab.Graph.LevelGraph" do
     @tag edges: [{11, 21}, {12, 22}, {13, 21}, {14, 23}]
     test "new/2 returns a new level graph", %{g: g} do
       assert lg = LevelGraph.new(g)
@@ -24,10 +24,12 @@ defmodule Graph.LevelGraphTest do
       assert lg = LevelGraph.new(g, :r)
       assert lg = LevelGraph.subgraph(lg, [1, 2, 3])
       assert %{g: g} = lg
-      assert Graph.vertices(g) ||| [1, 2, 3]
+      assert Bluetab.Graph.vertices(g) ||| [1, 2, 3]
 
       assert [e1, e2] =
-               g |> Graph.get_edges() |> Enum.sort_by(fn %{v1: v1, v2: v2} -> {v1, v2} end)
+               g
+               |> Bluetab.Graph.get_edges()
+               |> Enum.sort_by(fn %{v1: v1, v2: v2} -> {v1, v2} end)
 
       assert %{v1: 1, v2: 2} = e1
       assert %{v1: 1, v2: 3} = e2
@@ -50,7 +52,7 @@ defmodule Graph.LevelGraphTest do
 
   defp rank(g, v) do
     g
-    |> Graph.vertex_label(v)
+    |> Bluetab.Graph.vertex_label(v)
     |> Map.get(:r)
   end
 end

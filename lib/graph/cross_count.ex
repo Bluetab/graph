@@ -1,8 +1,8 @@
-defmodule Graph.CrossCount do
+defmodule Bluetab.Graph.CrossCount do
   @moduledoc """
   Functions for counting edge crossings in graphs.
   """
-  alias Graph.Vertex
+  alias Bluetab.Graph.Vertex
 
   @doc """
   Returns the cross count of edges a bilayer graph. It is assumed that the graph
@@ -15,22 +15,22 @@ defmodule Graph.CrossCount do
 
     ## Examples
 
-      iex> g = Graph.new(foo: [p: 1], bar: [p: 2], baz: [p: 1], xyzzy: [p: 2])
-      iex> g = Graph.add_edges(g, foo: :xyzzy, bar: :baz)
+      iex> g = Bluetab.Graph.new(foo: [p: 1], bar: [p: 2], baz: [p: 1], xyzzy: [p: 2])
+      iex> g = Bluetab.Graph.add_edges(g, foo: :xyzzy, bar: :baz)
       iex> CrossCount.bilayer_cross_count(g)
       1
 
   """
-  @spec bilayer_cross_count(Graph.t(), nil | (Vertex.t() -> term())) :: non_neg_integer()
+  @spec bilayer_cross_count(Bluetab.Graph.t(), nil | (Vertex.t() -> term())) :: non_neg_integer()
   def bilayer_cross_count(graph, pos_fn \\ nil)
 
-  def bilayer_cross_count(%Graph{} = g, nil) do
-    bilayer_cross_count(g, &Graph.vertex_label(g, &1))
+  def bilayer_cross_count(%Bluetab.Graph{} = g, nil) do
+    bilayer_cross_count(g, &Bluetab.Graph.vertex_label(g, &1))
   end
 
-  def bilayer_cross_count(%Graph{} = g, pos_fn) when is_function(pos_fn) do
+  def bilayer_cross_count(%Bluetab.Graph{} = g, pos_fn) when is_function(pos_fn) do
     g
-    |> Graph.get_edges()
+    |> Bluetab.Graph.get_edges()
     |> Enum.map(fn %{v1: v1, v2: v2} -> {pos_fn.(v1), pos_fn.(v2)} end)
     |> Enum.sort()
     |> Enum.map(fn {_, v2} -> v2 end)

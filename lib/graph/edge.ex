@@ -1,9 +1,9 @@
-defmodule Graph.Edge do
+defmodule Bluetab.Graph.Edge do
   @moduledoc """
   Represents an edge (v1, v2) from vertex v1 to v2 in a graph.
   """
 
-  alias Graph.Vertex
+  alias Bluetab.Graph.Vertex
 
   defstruct [:id, :v1, :v2, label: %{}]
 

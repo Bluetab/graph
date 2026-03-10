@@ -1,4 +1,4 @@
-defmodule Graph.MixProject do
+defmodule Bluetab.Graph.MixProject do
   use Mix.Project
 
   defp mathjax_resources(:html) do
@@ -30,7 +30,7 @@ defmodule Graph.MixProject do
       deps: deps(),
 
       # Docs
-      name: "Graph",
+      name: "Bluetab.Graph",
       source_url: "https://github.com/Bluetab/graph",
       homepage_url: "https://github.com/Bluetab/graph",
       docs: docs()
@@ -50,7 +50,7 @@ defmodule Graph.MixProject do
 
   defp docs do
     [
-      main: "Graph",
+      main: "Bluetab.Graph",
       extras: ["README.md"],
       before_closing_body_tag: &mathjax_resources/1
     ]

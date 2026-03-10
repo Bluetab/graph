@@ -1,7 +1,7 @@
-defmodule Graph.CrossCountTest do
+defmodule Bluetab.Graph.CrossCountTest do
   use ExUnit.Case
 
-  alias Graph.CrossCount
+  alias Bluetab.Graph.CrossCount
 
-  doctest Graph.CrossCount
+  doctest Bluetab.Graph.CrossCount
 end
